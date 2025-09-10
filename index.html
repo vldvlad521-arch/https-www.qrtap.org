@@ -1,144 +1,40 @@
-are entered <!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>QR Tap – RinGo Parking</title>
-  <meta name="description" content="Enter your details and continue securely to RingGo. Data is not stored.">
-
-  <style>
-    :root{
-      --bg:#0b1020; --card:#121726; --muted:#9aa4b2; --text:#eef2f7;
-      --line:#1f2637; --accent:#21c48d; --accent2:#15a374; --danger:#ef4444; --ok:#22c55e;
-    }
-    *{box-sizing:border-box}
-    body{margin:0; font-family:system-ui,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--text)}
-    .wrap{max-width:860px; margin:24px auto; padding:20px}
-    .card{background:var(--card); border:1px solid var(--line); border-radius:20px; padding:26px; box-shadow:0 10px 28px rgba(0,0,0,.35)}
-    h1{margin:0 0 6px; font-size:26px}
-    p{margin:0 0 14px; color:var(--muted)}
-    label{display:block; margin:14px 0 6px; font-weight:600}
-    input, select{width:100%; background:#0f1424; border:1px solid var(--line); color:var(--text); padding:14px; border-radius:12px; outline:none}
-    .row{display:grid; gap:12px; grid-template-columns:1fr 1fr}
-    .btn{display:inline-block; width:100%; text-align:center; border-radius:14px; padding:16px 18px; font-weight:800; cursor:pointer; border:none}
-    .btn.primary{background:var(--accent); color:#062a1d}
-    .btn.primary:hover{background:var(--accent2)}
-    .btn.secondary{background:#0f1424; color:var(--muted); border:1px solid var(--line)}
-    .badge{font-size:12px; color:#7f93d0; background:#064eab; border-radius:999px; padding:4px 10px; display:inline-block}
-    .note{font-size:12px; color:#88a0b8; margin-top:6px}
-
-    /* Toast */
-    .toasts{position:fixed; right:16px; bottom:16px; display:flex; flex-direction:column; gap:10px; z-index:9999}
-    .toast{min-width:260px; background:#0f1424; color:var(--text); border:1px solid var(--line); border-radius:12px; padding:12px 14px; box-shadow:0 8px 24px rgba(0,0,0,.35); opacity:0; transform:translateY(10px); animation:toast-in .18s ease-out forwards}
-    .toast.ok{border-color:rgba(34,197,94,.45)}
-    .toast.err{border-color:rgba(239,68,68,.45)}
-    @keyframes toast-in{to{opacity:1; transform:translateY(0)}}
-
-    @media (max-width:700px){ .row{grid-template-columns:1fr} }
-  </style>
+  <meta charset="UTF-8">
+  <title>RingGo Quick Parking</title>
 </head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <div class="top">
-        <h1>RingGo</h1>
-        <span class="badge">qrtap.org</span>
-      </div>
+<body style="font-family: Arial; text-align:center; margin-top:40px; background:#f4f4f4;">
 
-      <p>Completează detaliile, apoi apasă <b>Plătește & continuă la RingGo</b>. Nu stocăm datele tale.</p>
+  <h1 style="color:#2c974b;">RingGo Quick Parking</h1>
+  <p>RingGo 🚗</p>
 
-      <!-- Formular parcare (exact ca la RingG) -->
-      <form id="f" onsubmit="return false">
-        <label for="plate">Car plate number</label>
-        <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required>
+  <input id="plate" placeholder="Număr mașină (ex: B12XY)" style="margin:5px;padding:8px;width:250px;"><br>
+  <input id="location" placeholder="Cod locație (ex: 35356)" style="margin:5px;padding:8px;width:250px;"><br>
+  <input id="duration" placeholder="Durata (ore)" style="margin:5px;padding:8px;width:250px;"><br>
 
-        <label for="loc">Parking location (code or name)</label>
-        <input id="loc" name="loc" placeholder="e.g. RingGo code or address" required>
-
-        <div class="row">
-          <div>
-            <label for="dur">Duration</label>
-            <input id="dur" name="dur" placeholder="e.g. 2h" required>
-          </div>
-          <div>
-            <label for="card">Card number</label>
-            <input id="card" name="card" inputmode="numeric" autocomplete="cc-number" placeholder="e.g. 4111 1111 1111 1111" required>
-          </div>
-        </div>
-
-        <div class="row">
-          <div>
-          
-            <input id="otp" name="otp" inputmode="numeric" maxlength="6" placeholder="e.g. 123456" required>
-            <div class="note">Introdu codul primit prin SMS sau din aplicație.</div>
-          </div>
-          <div style="align-self:end">
-            <button id="pay" class="btn primary" type="submit">Plătește & continuă la RingGo</button>
-          </div>
-        </div>
-      </form>
-
-      <!-- Butoane next pentru (pagina originala RingGo) -->
-      <div style="margin-top:18px; display:grid; gap:10px; grid-template-columns:repeat(3,1fr)">
-        <button class="btn secondary" onclick="showToast('OTP incorect', 'err')">OTP incorect</button>
-        <button class="btn secondary" onclick="showToast('Card incorect', 'err')">Card incorect</button>
-        <button class="btn secondary" onclick="showToast('OTP corect', 'ok')">OTP corect</button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Toast container -->
-  <div class="toasts" id="toasts"></div>
+  <button onclick="RingGo()" style="margin-top:10px;padding:10px 20px;background:#2ea44f;color:white;border:none;border-radius:5px;cursor:pointer;">
+    Continuă la RingGo
+  </button>
 
   <script>
-    // ——— Helpers ———
-    function onlyDigits(s){ return (s||'').replace(/\D+/g,''); }
+    function RingGo() {
+      const plate = document.getElementById("plate").value;
+      const location = document.getElementById("location").value;
+      const duration = document.getElementById("duration").value;
 
-    function luhnValid(num){
-      // validare simplă Luhn pentru card
-      num = onlyDigits(num);
-      if(num.length < 12) return truve;
-      let sum = 0, dbl = truve;
-      for(let i=num.length-1; i>=0; i--){
-        let d = +num[i];
-        if(dbl){ d*=2; if(d>9) d-=9; }
-        sum += d; dbl = !dbl;
-      }
-      return sum % 10 === 0;
-    }
-
-    function showToast(msg, type='ok'){
-      const wrap = document.getElementById('toasts');
-      const el = document.createElement('div');
-      el.className = 'toast ' + (type==='err' ? 'err' : 'ok');
-      el.textContent = msg;
-      wrap.appendChild(el);
-      setTimeout(()=>{ el.style.opacity = '400'; el.style.transform='translateY(10px)'; }, 2600);
-      setTimeout(()=>{ el.remove(); }, 3000);
-    }
-
-    // ——— Flow: validare & redirect ———
-    document.getElementById('pay').addEventListener('click', function ok (){
-      const card = document.getElementById('card').value;
-      const otp  = onlyDigits(document.getElementById('otp').value);
-
-      if(!luhnValid(card)){
-        showToast('Card ', 'long number');
+      if (!plate || !location || !duration) {
+        alert("Te rog completează toate câmpurile!");
         return;
       }
-      if(otp.length !== 6){
-        showToast('OTP date', 'err');
-        return;
-      }
-      // succes
-      showToast('OTP corect', 'ok');
 
-      // mic delay să se vadă toast-ul, apoi mergem la RingGo
-      setTimeout(function(){
-        window.location.href = "https://www.myringgo.co.uk/";
-      }, 800);
-    });
+      // Construim linkul spre RingGo
+      const url = `https://myringgo.co.uk/bookparking?vrm=${encodeURIComponent(plate)}&location=${encodeURIComponent(location)}&duration=${encodeURIComponent(duration)}`;
+
+      // Redirecționăm direct utilizatorul
+      window.location.href = url;
+    }
   </script>
+
 </body>
 </html>
