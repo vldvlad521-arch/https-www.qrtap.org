@@ -3,151 +3,89 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>RingGo</title>
-  <meta name="description" content="Enter details and continue to RingGo. We do not store any data.">
-
+  <title>QRtap Quick Parking</title>
+  <meta name="description" content="Enter details and pay securely. You’ll complete parking with RingGo.">
   <style>
-    :root{
-      /* Brand (distinct, RingGo-inspired) */
-      --brand:#14a84a;        /* primary green */
-      --brand-hover:#118c3e;  /* hover */
-      --ink:#0a1114;          /* text */
-      --bg:#f5faf6;
-      --card:#ffffff;
-      --line:#e3eae4;
-      --muted:#6b7d72;
-      --error:#e33b3b;
-    }
+    :root{--brand:#14a84a;--brand2:#118c3e;--ink:#0a1114;--bg:#f5faf6;--card:#fff;--line:#e3eae4;--muted:#6b7d72}
     *{box-sizing:border-box} html,body{margin:0;padding:0}
     body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#f6fbf7 0%,#edf6f0 100%);color:var(--ink)}
     .wrap{max-width:900px;margin:0 auto;padding:28px 18px}
-    .hero{background:#0e2317;color:#fff;border-radius:18px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 10px 26px rgba(0,0,0,.07)}
-    .hero h1{margin:0;font-size:22px;letter-spacing:.2px}
+    .hero{background:#0e2317;color:#fff;border-radius:18px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
     .badge{background:rgba(255,255,255,.12);color:#d6efe1;padding:6px 10px;border-radius:999px;font-size:12px}
     .card{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.05)}
-    label{display:block;margin:14px 0 6px;font-weight:600;color:#1f2b24}
-    input{width:100%;padding:14px 12px;border-radius:12px;border:1px solid var(--line);background:#fbfdfb;color:var(--ink);outline:none}
+    label{display:block;margin:14px 0 6px;font-weight:600}
+    input{width:100%;padding:14px 12px;border-radius:12px;border:1px solid var(--line);background:#fbfdfb}
     input::placeholder{color:#95a69a}
     .row{display:grid;gap:12px;grid-template-columns:1fr 1fr}
-    .row-3{display:grid;gap:12px;grid-template-columns:1fr 1fr 1fr}
-    @media (max-width:760px){.row,.row-3{grid-template-columns:1fr}}
-    .help{color:var(--muted);font-size:12px;margin-top:4px}
-    .btn{display:inline-block;width:100%;text-align:center;margin-top:14px;padding:15px 18px;border-radius:14px;border:none;cursor:pointer;background:var(--brand);color:#fff;font-weight:800;letter-spacing:.2px}
-    .btn:hover{background:var(--brand-hover)}
-    .notice{margin-top:10px;color:var(--muted);font-size:12px}
-    .foot{margin-top:16px;font-size:12px;color:#7c8c82;text-align:center}
-
-    /* Toasts */
-    .toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:10px;z-index:9999}
-    .toast{min-width:260px;background:#102016;color:#e9f6ee;border:1px solid #1a3725;border-radius:12px;padding:12px 14px;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;transform:translateY(10px);animation:toast-in .18s ease-out forwards}
-    .toast.err{border-color:#5d1b1b;background:#1b0e0e;color:#ffecec}
-    @keyframes toast-in{to{opacity:1;transform:translateY(0)}}
+    @media (max-width:760px){.row{grid-template-columns:1fr}}
+    .btn{display:inline-block;width:100%;text-align:center;margin-top:14px;padding:15px 18px;border-radius:14px;border:none;cursor:pointer;background:var(--brand);color:#fff;font-weight:800}
+    .btn:hover{background:var(--brand2)}
+    .muted{color:var(--muted);font-size:12px;margin-top:6px}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="hero">
-      <h1>QRtap Quick Parking</h1>
+      <h1 style="margin:0;font-size:22px">QRtap Quick Parking</h1>
       <span class="badge">qrtap.org</span>
     </div>
 
     <div class="card">
       <p style="margin:0 0 8px;color:#365442">
-        Fill in your details, then press <b>Pay &amp; continue to RingGo</b>. We do not store your data.
+        Fill in your details, then press <b>Pay</b>. You’ll be redirected to a secure Stripe checkout.
+        After payment, we’ll send you to RingGo to complete parking.
       </p>
 
       <form id="f" onsubmit="return false">
         <label for="plate">Car plate number</label>
-        <input id="plate" name="plate" placeholder="e.g. AB12 CDE" autocomplete="on" required>
+        <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required>
 
         <label for="loc">Parking location (code or name)</label>
         <input id="loc" name="loc" placeholder="e.g. 35386 or street name" required>
 
         <div class="row">
           <div>
-            <label for="dur">Duration</label>
-            <input id="dur" name="dur" placeholder="e.g. 2h" required>
-          </div>
-          <div>
-            <label for="card">Card number</label>
-            <input id="card" name="card" inputmode="numeric" autocomplete="cc-number" placeholder="e.g. 4111 1111 1111 1111" required>
-            <div class="help">Demo only. Card details aren’t processed here.</div>
+            <label for="dur">Duration (hours)</label>
+            <input id="dur" name="dur" inputmode="decimal" placeholder="e.g. 2" required>
+            <div class="muted">Price is calculated at checkout.</div>
           </div>
         </div>
 
-        <div class="row-3">
-          <div>
-            <label for="exp">Expiry (MM/YY)</label>
-            <input id="exp" name="exp" inputmode="numeric" placeholder="MM/YY" required>
-          </div>
-          <div>
-            <label for="cvv">CVV/CVC</label>
-            <input id="cvv" name="cvv" inputmode="numeric" placeholder="3 or 4 digits" required>
-          </div>
-          <div>
-            <label for="otp">OTP (one-time password)</label>
-            <input id="otp" name="otp" inputmode="numeric" maxlength="6" placeholder="e.g. 123456" required>
-            <div class="help">Enter the code received by SMS or in the app.</div>
-          </div>
-        </div>
-
-        <button id="pay" class="btn" type="submit">Pay &amp; continue to RingGo</button>
-        <div class="notice">You’ll be redirected to RingGo’s official website to complete payment.</div>
+        <button id="pay" class="btn" type="submit">Pay</button>
+        <div class="muted">We do not process or store card data – payment is on Stripe’s secure page.</div>
       </form>
     </div>
-
-    <div class="foot">Not affiliated with RingGo. UI demo for convenience only.</div>
   </div>
 
-  <!-- Toasts -->
-  <div id="toasts" class="toasts"></div>
-
   <script>
-    // helpers
-    const onlyDigits = s => (s||'').replace(/\D+/g,'');
-    function luhnValid(num){
-      num = onlyDigits(num); if(num.length<12) return false;
-      let sum=0,dbl=false; for(let i=num.length-1;i>=0;i--){let d=+num[i]; if(dbl){d*=2; if(d>9)d-=9} sum+=d; dbl=!dbl} return sum%10===0;
-    }
-    function validExpiry(mmYY){
-      if(!mmYY) return false;
-      const m = mmYY.match(/^\s*(\d{1,2})\s*\/\s*(\d{2})\s*$/);
-      if(!m) return false; let mm=+m[1], yy=+m[2]; if(mm<1||mm>12) return false;
-      const now=new Date(), curYY=now.getFullYear()%100, curMM=now.getMonth()+1;
-      if(yy<curYY) return false; if(yy===curYY && mm<curMM) return false; return true;
-    }
-    function validCVV(cvv){ const d=onlyDigits(cvv); return d.length===3 || d.length===4; }
-    function toast(msg,type){ const box=document.getElementById('toasts'); const el=document.createElement('div'); el.className='toast'+(type==='err'?' err':''); el.textContent=msg; box.appendChild(el); setTimeout(()=>{el.style.opacity='0'; el.style.transform='translateY(10px)'},2400); setTimeout(()=>el.remove(),3000); }
-
-    // auto "MM/YY" slash
-    document.getElementById('exp').addEventListener('input', (e)=>{
-      let v=onlyDigits(e.target.value).slice(0,4);
-      if(v.length>=3) v=v.slice(0,2)+'/'+v.slice(2);
-      else if(v.length===1 && +v[0]>1) v='0'+v[0]+'/';
-      e.target.value=v;
-    });
-
-    // prefill location from QR ?loc=12345 and plate from localStorage
+    // Prefill ?loc=12345 from QR
     (function(){
       const p=new URLSearchParams(location.search);
       const loc=p.get('loc'); if(loc) document.getElementById('loc').value=loc;
       const saved=localStorage.getItem('plate'); if(saved) document.getElementById('plate').value=saved;
     })();
 
-    document.getElementById('pay').addEventListener('click', ()=>{
-      const card=document.getElementById('card').value;
-      const exp =document.getElementById('exp').value;
-      const cvv =document.getElementById('cvv').value;
-      const otp =onlyDigits(document.getElementById('otp').value);
+    document.getElementById('pay').addEventListener('click', async ()=>{
+      const plate = document.getElementById('plate').value.trim();
+      const loc   = document.getElementById('loc').value.trim();
+      const dur   = document.getElementById('dur').value.trim();
+      if(!plate || !loc || !dur){ alert('Please complete all fields.'); return; }
 
-      if(!luhnValid(card)) { toast('Invalid card number','err'); return; }
-      if(!validExpiry(exp)){ toast('Invalid expiry date','err'); return; }
-      if(!validCVV(cvv))   { toast('Invalid CVV','err'); return; }
-      if(otp.length!==6)   { toast('Incorrect OTP','err'); return; }
-
-      toast('OTP accepted');
-      const plate=document.getElementById('plate').value.trim(); if(plate) localStorage.setItem('plate',plate);
-      setTimeout(()=>{ window.location.href='https://www.myringgo.co.uk/'; }, 800);
+      try{
+        const res = await fetch('/.netlify/functions/create-checkout-session', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ plate, loc, dur })
+        });
+        if(!res.ok){ throw new Error('Server error'); }
+        const data = await res.json();
+        // salvează plăcuța doar local pentru UX
+        localStorage.setItem('plate', plate);
+        // du utilizatorul la Stripe Checkout
+        window.location.href = data.url;
+      }catch(e){
+        alert('Could not start checkout. Please try again in a moment.');
+      }
     });
   </script>
 </body>
