@@ -1,75 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QRtap Quick Parking</title>
-  <style>
-    body { font-family: Arial, sans-serif; background:#f0f2f5; margin:0; padding:24px; }
-    .card { max-width:420px; margin:0 auto; background:#fff; border-radius:12px; padding:20px; box-shadow:0 6px 18px rgba(0,0,0,.08); }
-    h1 { font-size:1.3rem; margin:0 0 10px; text-align:center; }
-    label { display:block; margin:10px 0 6px; font-weight:600; }
-    input, select { width:100%; padding:12px; border:1px solid #d5d9e0; border-radius:10px; margin-bottom:12px; }
-    button, .btn-link { width:100%; padding:12px; background:#28a745; color:#fff; border:none; border-radius:10px; font-weight:800; cursor:pointer; text-align:center; display:inline-block; text-decoration:none; }
-    button:hover, .btn-link:hover { background:#218838; }
-    .note { font-size:13px; color:#6b7280; margin:10px 0; text-align:center; }
-    .grid { display:grid; gap:8px; grid-template-columns:1fr 1fr; margin-top:12px; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1>QRtap Quick Parking</h1>
+// server.js
+import express from "express";
+import Stripe from "stripe";
+import cors from "cors";
 
-    <form id="f">
-      <label for="plate">Car plate number</label>
-      <input id="plate" placeholder="e.g. AB12 CDE" autocomplete="off" required>
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-      <label for="loc">Parking location (code or name)</label>
-      <input id="loc" placeholder="e.g. 12345" autocomplete="off" required>
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // sk_test_...
 
-      <label for="dur">Select duration</label>
-      <select id="dur" required>
-        <option value="">-- Choose duration --</option>
-        <option value="1">1 hour</option>
-        <option value="2">2 hours</option>
-        <option value="4">4 hours</option>
-        <option value="24">1 day</option>
-      </select>
+// calculează suma (în pence) după durată
+function pricePence(hoursStr) {
+  const h = parseFloat(hoursStr);
+  if (isNaN(h)) throw new Error("Invalid duration");
+  if (h === 0.5) return 200;           // £2.00
+  return Math.round(h * 400);          // £4.00 / oră
+}
 
-      <button type="submit">Pay</button>
-    </form>
+app.post("/create-checkout", async (req, res) => {
+  try {
+    const { plate, loc, h } = req.body;
+    const amount = pricePence(h);
 
-    <p class="note">💡 For fastest checkout, use <b>Apple Pay</b> or <b>Google Pay</b> when available.</p>
-
-    <div class="grid">
-      <a class="btn-link" href="https://pay.sumup.com/b2c/X0J9V5NWJT" rel="noopener">Pay 1h</a>
-      <a class="btn-link" href="https://pay.sumup.com/b2c/XI4QH7R2DN" rel="noopener">Pay 2h</a>
-      <a class="btn-link" href="https://pay.sumup.com/b2c/XRL02T0TTY" rel="noopener">Pay 4h</a>
-      <a class="btn-link" href="https://pay.sumup.com/b2c/XD341ZO8NJ" rel="noopener">Pay 1 day</a>
-    </div>
-
-    <a class="btn-link" href="https://www.myringgo.co.uk" target="_blank" style="margin-top:12px; background:#1d4ed8;">Open RingGo</a>
-  </div>
-
-  <script>
-    const SUMUP_LINKS = {
-      "1": "https://pay.sumup.com/b2c/X0J9V5NWJT",
-      "2": "https://pay.sumup.com/b2c/XI4QH7R2DN",
-      "4": "https://pay.sumup.com/b2c/XRL02T0TTY",
-      "24":"https://pay.sumup.com/b2c/XD341ZO8NJ"
-    };
-
-    document.getElementById("f").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const hours = document.getElementById("dur").value;
-      const url = SUMUP_LINKS[hours];
-      if (!url) { alert("Select a duration."); return; }
-
-      const plate = document.getElementById("plate").value.trim();
-      const loc   = document.getElementById("loc").value.trim();
-      const qs = new URLSearchParams({ plate, loc, h:hours }).toString();
-      window.location.href = url + "?" + qs;
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      currency: "gbp",
+      line_items: [
+        {
+          price_data: {
+            currency: "gbp",
+            product_data: { name: `Parking ${plate} @ ${loc} (${h}h)` },
+            unit_amount: amount,
+          },
+          quantity: 1,
+        },
+      ],
+      // URLs după plată
+      success_url: "https://qrtap.org/success.html",
+      cancel_url: "https://qrtap.org/cancel.html",
+      // Apple Pay / Google Pay on by default
+      payment_method_types: ["card"],
+      allow_promotion_codes: false,
+      billing_address_collection: "auto",
     });
-  </script>
-</body>
-</html>
+
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.listen(4242, () => console.log("Server on http://localhost:4242"));
+STRIPE_SECRET_KEY=sk_test_xxxxxxxxxxxxxxxxxxxxxxxxx
