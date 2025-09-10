@@ -1,115 +1,111 @@
 <!doctype html>
-<html lang="en">
+<html lang="ro">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>QRtap Quick Parking</title>
+  <meta name="description" content="Plătește rapid parcarea. Datele de card se introduc pe pagina sigură SumUp." />
   <style>
-    :root { --bg:#0b1020; --card:#121726; --line:#1f2637; --text:#e8eefb; --muted:#9aa4b2; --accent:#21c48d; }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family: system-ui,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--text); }
-    .wrap { max-width:860px; margin: 0 auto; padding: 20px; }
-    .card { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:24px; box-shadow:0 10px 28px rgba(0,0,0,.35) }
-    h1 { margin:0 0 6px; font-size:28px }
-    label { display:block; margin:14px 0 6px; font-weight:600 }
-    input, select { width:100%; background:#0f1424; border:1px solid var(--line); color:var(--text); padding:14px; border-radius:12px; outline:none }
-    .btn { display:inline-block; width:100%; text-align:center; border:0; border-radius:14px; padding:16px 18px; font-weight:800; cursor:pointer; background:var(--accent); color:#042c22; margin-top:16px }
-    .hint { font-size:12px; color:#88a0b8; margin-top:6px }
-    .row { display:grid; gap:12px; grid-template-columns: 1fr 1fr }
-    @media (max-width:700px) { .row { grid-template-columns: 1fr } }
-    .badge { display:inline-block; font-size:12px; background:#046e3b; border-radius:999px; padding:4px 10px; float:right }
-    .toast { position:fixed; inset:auto 16px 16px 16px; background:#0e1526; border:1px solid var(--line); color:#8de0ea; padding:10px 14px; border-radius:10px; display:none }
+    :root{--bg:#0b1020;--card:#121726;--muted:#9aa4b2;--text:#eef2f7;--line:#1f2637;--accent:#21c48d;}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
+    .wrap{max-width:860px;margin:0 auto;padding:20px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+    h1{margin:0 0 6px;font-size:26px}
+    p{margin:0 0 12px;color:var(--muted)}
+    label{display:block;margin:14px 0 6px;font-weight:600}
+    input,select{width:100%;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:#0f1424;color:var(--text);outline:none}
+    .btn{display:inline-block;width:100%;text-align:center;border-radius:14px;padding:14px 18px;font-weight:800;cursor:pointer;background:var(--accent);color:#042422;border:0;margin-top:12px}
+    .note{font-size:12px;color:#7d8aa0;margin-top:10px}
+    .toast{position:fixed;inset:auto 16px 16px 16px;background:#0e1526;border:1px solid var(--line);color:#a8b0b8;padding:10px 14px;border-radius:10px;display:none}
+    .grid{display:grid;gap:10px;grid-template-columns:repeat(2,1fr)}
+    @media (max-width:520px){.grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>RingGo Quick Parking <span class="badge">qrtap.org</span></h1>
-      <p class="hint">
-        Fill in your details and press <b>Next</b>. You’ll be sent to Worldpay’s secure page to enter your card.
-        We do not store your data.
-      </p>
+      <h1>QRtap Quick Parking</h1>
+      <p>Completează detaliile, apoi apasă <b>Pay</b>. Vei fi trimis pe pagina sigură SumUp pentru plată. După plată revii pentru a finaliza parcarea.</p>
 
-      <form id="f" method="POST" action="https://secure.worldpay.com/wcc/purchase">
-        <!-- 🔐 OBLIGATORII pentru Worldpay -->
-        <input type="hidden" name="instId" id="instId" value="INST_ID_HERE" />
-        <input type="hidden" name="currency" value="GBP" />
-        <input type="hidden" name="amount" id="amount" value="" />
-        <input type="hidden" name="cartId" id="cartId" value="" />
-        <input type="hidden" name="desc" id="desc" value="" />
-        <!--pune testMode in LIVE -->
-
-        <!-- Date pentru tine (se trimit ca pană la checkout) -->
+      <form id="f">
         <label for="plate">Car plate number</label>
-        <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required />
+        <input id="plate" name="plate" placeholder="e.g. AB12 CDE" autocomplete="off" required />
 
         <label for="loc">Parking location (code or name)</label>
-        <input id="loc" name="loc" placeholder="e.g. 35386 or street name" required />
+        <input id="loc" name="loc" placeholder="e.g. 35386 or street name" autocomplete="off" required />
 
-        <div class="row">
-          <div>
-            <label for="dur">Duration</label>
-            <select id="dur" name="dur" required>
-              <option value="" disabled selected>Select...</option>
-              <option value="0.5">30 min</option>
-              <!-- 1 .. 48 hours -->
-              <script>
-                // inject options 1..48 via JS to keep HTML clean
-                document.addEventListener('DOMContentLoaded', () => {
-                  const s = document.getElementById('dur');
-                  for (let h=1; h<=48; h++) {
-                    const opt = document.createElement('option');
-                    opt.value = String(h);
-                    opt.textContent = `${h} hour${h>1?'s':''}`;
-                    s.appendChild(opt);
-                  }
-                });
-              </script>
-            </select>
-          </div>
-        </div>
+        <label for="dur">Duration</label>
+        <select id="dur" name="dur" required>
+          <option value="" disabled selected>Choose duration</option>
+          <option value="0.5">30 minutes</option>
+          <option value="1">1 hour</option>
+          <option value="2">2 hours</option>
+          <option value="3">3 hours</option>
+          <option value="4">4 hours</option>
+          <option value="5">5 hours</option>
+          <option value="6">6 hours</option>
+          <option value="12">12 hours</option>
+          <option value="24">1 day</option>
+          <option value="48">2 days</option>
+        </select>
 
         <button type="submit" class="btn">Pay</button>
       </form>
+
+      <p class="note">Nu procesăm și nu stocăm date de card – plata se face pe pagina sigură SumUp.</p>
     </div>
   </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
-    // === PREȚURI (fără afișare pe pagină) ============================
-    // 30 min = £2.00 ; 1h–48h = £4.00 / oră
-    function calcAmount(hoursVal) {
-      const h = parseFloat(hoursVal);
-      if (isNaN(h)) return null;
-      if (h === 0.5) return 2.00;
-      return 4.00 * h;
+    // === Înlocuiește cu link-urile tale reale SumUp (B2C) când creezi mai multe ===
+    // Link-urile pe care mi le-ai dat:
+    // 1h:  X0J9V5NWJT
+    // 2h:  XI4QH7R2DN
+    // 4h:  XRLO2T0TTY
+    // zi:   XD341ZO8NJ
+    const SUMUP_LINKS = {
+      "0.5": "https://pay.sumup.com/b2c/X0J9V5NWJT", // 30 min -> folosim linkul de 1h până creezi unul separat
+      "1":   "https://pay.sumup.com/b2c/X0J9V5NWJT",
+      "2":   "https://pay.sumup.com/b2c/XI4QH7R2DN",
+      "3":   "https://pay.sumup.com/b2c/XRLO2T0TTY",  // 3h -> folosim 4h
+      "4":   "https://pay.sumup.com/b2c/XRLO2T0TTY",
+      "defaultLong": "https://pay.sumup.com/b2c/XD341ZO8NJ" // >=5h sau zile
+    };
+
+    const form = document.getElementById('f');
+    const toast = document.getElementById('toast');
+
+    function show(msg){
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      setTimeout(()=>toast.style.display='none', 2000);
     }
 
-    // === UI helpers ===================================================
-    function toast(msg, t=1500){ const el=document.getElementById('toast'); el.textContent=msg; el.style.display='block'; setTimeout(()=>el.style.display='none', t); }
-
-    // === SUBMIT => către Worldpay ====================================
-    document.getElementById('f').addEventListener('submit', (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
-
-      const instId = document.getElementById('instId').value.trim();
-      if (!/^\d{5,10}$/.test(instId)) { toast('Worldpay Installation ID lipsă sau invalid.'); return; }
-
       const plate = document.getElementById('plate').value.trim();
       const loc   = document.getElementById('loc').value.trim();
-      const dur   = document.getElementById('dur').value;
-      if (!plate || !loc || !dur){ toast('Completează toate câmpurile.'); return; }
+      const dur   = parseFloat(document.getElementById('dur').value);
 
-      const amount = calcAmount(dur);
-      if (amount === null) { toast('Durată invalidă.'); return; }
+      if(!plate || !loc || !dur){ show('Completează toate câmpurile.'); return; }
 
-      // setăm câmpurile Worldpay
-      document.getElementById('amount').value = amount.toFixed(2);
-      document.getElementById('desc').value   = `Parking ${plate} @ ${loc} (${dur}h)`;
-      document.getElementById('cartId').value = `${Date.now()}-${plate.replace(/\s+/g,'')}`;
+      // Alegem linkul după durată
+      let url;
+      if (dur <= 0.5) url = SUMUP_LINKS["0.5"];
+      else if (dur <= 1) url = SUMUP_LINKS["1"];
+      else if (dur <= 2) url = SUMUP_LINKS["2"];
+      else if (dur <= 4) url = SUMUP_LINKS["3"]; // pentru 3–4h folosim același
+      else url = SUMUP_LINKS["defaultLong"];    // 5h+ / 1–2 zile
 
-      e.target.submit(); // POST către Worldpay (pagina lor de card)
+      // Atașăm info utile ca query (opțional, doar pentru identificare)
+      const qs = new URLSearchParams({ plate, loc, h:String(dur) }).toString();
+      url += (url.includes('?') ? '&' : '?') + qs;
+
+      // Redirect către SumUp (acolo se introduce cardul)
+      window.location.href = url;
     });
   </script>
 </body>
