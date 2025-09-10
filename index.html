@@ -3,113 +3,124 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>QRtap – Pay & Park</title>
-  <meta name="description" content="Scan, pick duration, pay via SumUp. We do not store card data." />
+  <title>QRtap Quick Parking</title>
+  <meta name="description" content="Pay quickly for parking via QRtap and SumUp."/>
   <style>
-    body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:#0b1020;color:#eef2f7}
-    .wrap{max-width:860px;margin:0 auto;padding:20px}
-    .card{background:#121726;border:1px solid #1f2637;border-radius:20px;padding:22px;box-shadow:0 10px 28px rgba(0,0,0,.35);margin-top:18px}
-    h2{margin:0 0 6px}
-    label{display:block;margin:12px 0 6px;font-weight:600}
-    input,button{width:100%;padding:14px;border-radius:12px;border:1px solid #1f2637;background:#0f1424;color:#eef2f7}
-    button{background:#21c48d;border:none;color:#05261d;font-weight:800;cursor:pointer}
-    button:hover{background:#18b37f}
-    .dur-grid{display:grid;gap:10px;grid-template-columns:repeat(2,1fr);margin-top:10px}
-    .dur-btn{padding:12px;border-radius:12px;border:1px solid #1f2637;background:#0f1424;color:#eef2f7;cursor:pointer}
-    .dur-btn.active{outline:2px solid #21c48d}
-    .muted{color:#9aa4b2;font-size:12px;margin-top:6px}
-    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-    .tbtn{background:#0f1424;border:1px solid #1f2637;color:#eef2f7;padding:8px 10px;border-radius:10px;cursor:pointer}
-    .toast{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);background:#0f1424;border:1px solid #1f2637;border-radius:10px;padding:10px 14px;z-index:9999;display:none}
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0; padding: 0;
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+    h1 {
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+    }
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: 600;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin-top: 16px;
+      background: #00a652;
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .btn:hover {
+      background: #008f47;
+    }
+    .dur-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .dur-btn {
+      padding: 10px;
+      border: 1px solid #00a652;
+      border-radius: 6px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .dur-btn.active {
+      background: #00a652;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h2>Pay & Park</h2>
-      <p class="muted">Scanezi, alegi durata, plătești prin SumUp. Banii intră în contul firmei (payout conform setărilor SumUp). Nu stocăm date de card.</p>
+  <div class="card">
+    <h1>QRtap Quick Parking</h1>
+    <p>Fill in your details, choose duration, then press <b>Pay</b>. Payment is securely processed via SumUp.</p>
 
-      <form id="f">
-        <label for="plate">Car plate number</label>
-        <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required>
+    <form id="f">
+      <label for="plate">Car plate number</label>
+      <input id="plate" placeholder="e.g. AB12 CDE" required/>
 
-        <label for="loc">Parking location code</label>
-        <input id="loc" name="loc" inputmode="numeric" placeholder="e.g. 7001" required>
+      <label for="loc">Parking location (code or name)</label>
+      <input id="loc" placeholder="e.g. 35386" required/>
 
-        <label>Duration</label>
-        <div class="dur-grid" id="durGrid">
-          <button type="button" class="dur-btn" data-val="30m">30 minutes</button>
-          <button type="button" class="dur-btn" data-val="1h">1 hour</button>
-          <button type="button" class="dur-btn" data-val="2h">2 hours</button>
-          <button type="button" class="dur-btn" data-val="4h">4 hours</button>
-          <button type="button" class="dur-btn" data-val="day">All day</button>
-        </div>
-
-        <div class="muted">După plată revii pe site. Opțional poți continua la RingGo.</div>
-        <br>
-        <button type="submit">Pay</button>
-      </form>
-
-      <!-- Butoane demo pentru feedback/UX -->
-      <div class="toolbar">
-        <button type="button" class="tbtn" onclick="toast('Show OTP')">Show OTP</button>
-        <button type="button" class="tbtn" onclick="toast('OTP incorect')">OTP incorect</button>
-        <button type="button" class="tbtn" onclick="toast('Card incorect')">Card incorect</button>
-        <button type="button" class="tbtn" onclick="toast('OTP corect')">OTP corect</button>
+      <label>Duration</label>
+      <div id="durGrid" class="dur-grid">
+        <div class="dur-btn" data-dur="1h">1 hour</div>
+        <div class="dur-btn" data-dur="2h">2 hours</div>
+        <div class="dur-btn" data-dur="4h">4 hours</div>
+        <div class="dur-btn" data-dur="day">Full day</div>
       </div>
-    </div>
+
+      <button type="submit" class="btn">Pay</button>
+    </form>
   </div>
 
-  <div id="toast" class="toast"></div>
-
   <script>
-    // Pre-populează din QR: ?loc=7001&plate=AB12CDE
-    (function(){
-      const q = new URLSearchParams(location.search);
-      const loc = q.get('loc'); const plate = q.get('plate');
-      if (loc)   document.getElementById('loc').value   = loc;
-      if (plate) document.getElementById('plate').value = plate.toUpperCase();
-    })();
-
-    // Alegere durată
-    let duration = '';
-    document.getElementById('durGrid').addEventListener('click', (e)=>{
-      const btn = e.target.closest('.dur-btn'); if(!btn) return;
-      [...document.querySelectorAll('.dur-btn')].forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      duration = btn.dataset.val;
-    });
-
-    // Linkuri SumUp fictive – înlocuiește cu cele reale din Dashboard
-    const LINKS_FOR_DURATION = {
-      "30m": "https://pay.sumup.com/fake-30m", // £2.00
-      "1h":  "https://pay.sumup.com/fake-1h",  // £4.00
-      "2h":  "https://pay.sumup.com/fake-2h",  // £8.00
-      "4h":  "https://pay.sumup.com/fake-4h",  // £16.00
-      "day": "https://pay.sumup.com/fake-day"  // £20.00 (sau cât stabilești tu)
+    const LINKS = {
+      '1h': 'https://pay.sumup.com/b2c/X0J9V5NWJT', // 1h - €6.54
+      '2h': 'https://pay.sumup.com/b2c/XI4QH7R2DN', // 2h - €7.85
+      '4h': 'https://pay.sumup.com/b2c/XRL02T0TTY', // 4h - €9.08
+      'day': 'https://pay.sumup.com/b2c/XD341ZO8NJ' // Full day - €45.40
     };
 
-    function toast(msg){
-      const t=document.getElementById('toast');
-      t.textContent=msg; t.style.display='block';
-      setTimeout(()=>{ t.style.display='none'; }, 1500);
-    }
+    let selected = null;
 
-    document.getElementById('f').addEventListener('submit', (e)=>{
+    document.getElementById('durGrid').addEventListener('click', (e) => {
+      const btn = e.target.closest('.dur-btn');
+      if (!btn) return;
+      document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selected = btn.dataset.dur;
+    });
+
+    document.getElementById('f').addEventListener('submit', (e) => {
       e.preventDefault();
-      const plate = document.getElementById('plate').value.trim().toUpperCase();
-      const loc   = document.getElementById('loc').value.trim();
-
-      if(!plate || !loc){ toast('Completează plăcuța și locația.'); return; }
-      if(!duration){ toast('Alege durata.'); return; }
-
-      const payUrl = LINKS_FOR_DURATION[duration];
-      if(!payUrl || payUrl.includes('fake')){
-        toast('Plata nu e configurată pentru această durată.'); return;
+      if (!selected) {
+        alert("Please select a duration.");
+        return;
       }
-
-      // Redirecționează la SumUp
-      window.location.href = payUrl;
+      const link = LINKS[selected];
+      window.location.href = link;
     });
   </script>
 </body>
