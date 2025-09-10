@@ -3,45 +3,43 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RingGo Quick Parking</title>
-  <meta name="description" content=" RingGo via Worldpay. We do not store card data." />
+  <title>QRtap Quick Parking</title>
   <style>
-    :root{
-      --bg:#0b1020;--card:#121726;--muted:#9aa4b2;--text:#eef2f7;
-      --line:#1f2637;--accent:#21c48d;--accent2:#15a374;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
-    .wrap{max-width:860px;margin:0 auto;padding:20px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 10px 28px rgba(0,0,0,.35);margin:16px 0}
-    h1{margin:0 0 6px;font-size:28px}
-    p{margin:8px 0 14px;color:var(--muted)}
-    label{display:block;margin:14px 0 6px;font-weight:600}
-    input{width:100%;background:#0f142d;border:1px solid var(--line);color:var(--text);padding:14px;border-radius:12px;outline:none}
-    .row{display:grid;gap:12px;grid-template-columns:1fr 1fr}
-    @media (max-width:700px){.row{grid-template-columns:1fr}}
-    .btn{display:inline-block;width:100%;text-align:center;border-radius:14px;padding:14px 18px;font-weight:800;cursor:pointer;border:0;background:var(--accent);color:#042c22}
-    .btn:hover{background:var(--accent2)}
-    .badge{font-size:12px;color:#77d8aa;background:#064e3b;border-radius:99px;padding:4px 10px}
-    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-    .note{font-size:12px;color:#8aa0b8;margin-top:6px}
-    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-    .tbtn{background:#0f142d;border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:10px;cursor:pointer}
-    .toast{position:fixed;inset:auto 16px 16px 50%;transform:translateX(-50%);background:#0f142d;border:1px solid var(--line);color:#dbe7ff;padding:10px 14px;border-radius:10px;z-index:9999}
+    :root { --bg:#0b1020; --card:#121726; --line:#1f2637; --text:#e8eefb; --muted:#9aa4b2; --accent:#21c48d; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--text); }
+    .wrap { max-width:860px; margin: 0 auto; padding: 20px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:24px; box-shadow:0 10px 28px rgba(0,0,0,.35) }
+    h1 { margin:0 0 6px; font-size:28px }
+    label { display:block; margin:14px 0 6px; font-weight:600 }
+    input, select { width:100%; background:#0f1424; border:1px solid var(--line); color:var(--text); padding:14px; border-radius:12px; outline:none }
+    .btn { display:inline-block; width:100%; text-align:center; border:0; border-radius:14px; padding:16px 18px; font-weight:800; cursor:pointer; background:var(--accent); color:#042c22; margin-top:16px }
+    .hint { font-size:12px; color:#88a0b8; margin-top:6px }
+    .row { display:grid; gap:12px; grid-template-columns: 1fr 1fr }
+    @media (max-width:700px) { .row { grid-template-columns: 1fr } }
+    .badge { display:inline-block; font-size:12px; background:#046e3b; border-radius:999px; padding:4px 10px; float:right }
+    .toast { position:fixed; inset:auto 16px 16px 16px; background:#0e1526; border:1px solid var(--line); color:#8de0ea; padding:10px 14px; border-radius:10px; display:none }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <div class="top">
-        <div>
-          <h1>RingGo Quick Parking</h1>
-          <span class="badge">qrtap.org</span>
-        </div>
-      </div>
-      <p>Completează datele, apoi apasă <b>Next</b>. Vei fi redirecționat pe pagina securizată <b>Worldpay de la RingGo</b>. După plată, te trimitem la <b>text mesaje</b> ca să finalizezi parcarea. Nu procesăm și nu stocăm datele tale de card.</p>
+      <h1>QRtap Quick Parking <span class="badge">qrtap.org</span></h1>
+      <p class="hint">
+        Fill in your details and press <b>Pay</b>. You’ll be sent to Worldpay’s secure page to enter your card.
+        We do not store your data.
+      </p>
 
-      <form id="f">
+      <form id="f" method="POST" action="https://secure.worldpay.com/wcc/purchase">
+        <!-- 🔐 OBLIGATORII pentru Worldpay -->
+        <input type="hidden" name="instId" id="instId" value="INST_ID_HERE" />
+        <input type="hidden" name="currency" value="GBP" />
+        <input type="hidden" name="amount" id="amount" value="" />
+        <input type="hidden" name="cartId" id="cartId" value="" />
+        <input type="hidden" name="desc" id="desc" value="" />
+        <!-- NU pune testMode in LIVE -->
+
+        <!-- Date pentru tine (nu se trimit ca pană la checkout) -->
         <label for="plate">Car plate number</label>
         <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required />
 
@@ -50,186 +48,69 @@
 
         <div class="row">
           <div>
-            <label for="dur">Duration (hours)</label>
-            <input id="dur" name="dur" placeholder="e.g. 2" required />
+            <label for="dur">Duration</label>
+            <select id="dur" name="dur" required>
+              <option value="" disabled selected>Select...</option>
+              <option value="0.5">30 min</option>
+              <!-- 1 .. 48 hours -->
+              <script>
+                // inject options 1..48 via JS to keep HTML clean
+                document.addEventListener('DOMContentLoaded', () => {
+                  const s = document.getElementById('dur');
+                  for (let h=1; h<=48; h++) {
+                    const opt = document.createElement('option');
+                    opt.value = String(h);
+                    opt.textContent = `${h} hour${h>1?'s':''}`;
+                    s.appendChild(opt);
+                  }
+                });
+              </script>
+            </select>
           </div>
         </div>
 
-        <div style="margin:14px 0 6px" class="note">Price is calculated at checkout.</div>
-        <button type="submit" class="btn">Next</button>
+        <button type="submit" class="btn">Pay</button>
       </form>
-
-      <!-- Butoane demo pentru UX (opțional, doar pe front-end) -->
-      <div class="toolbar">
-        <button class="tbtn" type="button" onclick="toast('OTP sent (demo)')">Show OTP</button>
-        <button class="tbtn" type="button" onclick="toast('OTP incorect (demo)')">OTP incorect</button>
-        <button class="tbtn" type="button" onclick="toast('Card incorect (demo)')">Card incorect</button>
-        <button class="tbtn" type="button" onclick="toast('OTP corect (demo)')">OTP corect</button>
-      </div><!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>QRtap – Pay & Park (Worldpay)</title>
-  <style>
-    body{font-family:system-ui,Arial,sans-serif;background:#f5f7fb;margin:0;padding:24px}
-    .card{max-width:460px;margin:0 auto;background:#fff;border-radius:12px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
-    h2{margin:0 0 8px}
-    label{display:block;margin:12px 0 6px;font-weight:600}
-    input,select,button{width:100%;padding:12px;border-radius:10px;border:1px solid #d6d9e0;font-size:15px}
-    button{background:#2563eb;color:#fff;border-color:#2563eb;font-weight:800;cursor:pointer}
-    button:hover{background:#1e50c7}
-    .note{color:#6b7280;font-size:13px;margin-top:8px}
-    .warn{color:#b45309;font-size:13px;margin-top:10px;display:none}
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h2>QRtap – Quick Parking</h2>
-    <p class="note">Completează, alege durata și apasă <b>Pay</b>. Vei fi redirecționat pe pagina securizată <b>Worldpay</b> pentru introducerea cardului.</p>
-
-    <form id="ui">
-      <label for="plate">Car plate number</label>
-      <input id="plate" placeholder="e.g. AB12 CDE" required>
-
-      <label for="loc">Parking location (code or name)</label>
-      <input id="loc" placeholder="e.g. 7001 or street name" required>
-
-      <label for="dur">Choose duration</label>
-      <select id="dur" required>
-        <option value="" disabled selected>Select…</option>
-        <option value="0.5">30 minutes (£2.00)</option>
-        <option value="1">1 hour (£4.00)</option>
-        <option value="2">2 hours (£8.00)</option>
-        <option value="3">3 hours (£12.00)</option>
-        <option value="4">4 hours (£16.00)</option>
-        <option value="5">5 hours (£20.00)</option>
-        <option value="6">6 hours (£24.00)</option>
-        <option value="7">7 hours (£28.00)</option>
-        <option value="8">8 hours (£32.00)</option>
-        <option value="9">9 hours (£36.00)</option>
-        <option value="10">10 hours (£40.00)</option>
-        <option value="12">12 hours (£48.00)</option>
-        <option value="24">24 hours (£96.00)</option>
-        <option value="36">36 hours (£144.00)</option>
-        <option value="48">48 hours (£192.00)</option>
-      </select>
-
-      <button type="submit" style="margin-top:14px">Pay</button>
-      <p id="msg" class="warn"></p>
-    </form>
-
-    <!-- Formularul care se TRIMITE către Worldpay -->
-    <form id="wp" method="post" action="https://secure.worldpay.com/wcc/purchase" style="display:none">
-      <!-- OBLIGATORIU -->
-      <input name="instId" id="instId" value="YOUR_INST_ID_HERE">
-      <input name="cartId" id="cartId" value="">           <!-- ID-ul comenzii tale (intern) -->
-      <input name="amount" id="amount" value="">           <!-- suma -->
-      <input name="currency" value="GBP">                  <!-- monedă -->
-      <input name="desc" id="desc" value="">               <!-- descriere afișată -->
-
-      <!-- CUSTOM FIELDS (MC_*) – ajută la identificare în răspuns -->
-      <input name="name" id="name" value="">               <!-- nume plătitor (folosim plate) -->
-      <input name="M_plate" id="M_plate" value="">
-      <input name="M_loc" id="M_loc" value="">
-      <input name="M_hours" id="M_hours" value="">
-
-      <!-- Redirecturi -->
-      <input name="successURL" value="https://qrtap.org/success.html">
-      <input name="cancelURL"  value="https://qrtap.org/cancel.html">
-      <input name="failureURL" value="https://qrtap.org/failure.html">
-
-      <!-- TEST MODE (100). Scoate-l când treci live. -->
-      <input name="testMode" value="100">
-    </form>
-  </div>
-
-  <script>
-    // tarif: £4/oră, 30 min = £2
-    function priceForHours(h) {
-      if (h === 0.5) return 2.00;
-      return h * 4.00;
-    }
-
-    // mic utilitar
-    function show(msg){
-      const el = document.getElementById('msg');
-      el.textContent = msg;
-      el.style.display = 'block';
-      setTimeout(()=>el.style.display='none', 2000);
-    }
-
-    // Pre-umplere din QR (opțional): ?plate=AB12CDE&loc=7001&h=2
-    (function(){
-      const q = new URLSearchParams(location.search);
-      if(q.get('plate')) document.getElementById('plate').value = q.get('plate').toUpperCase();
-      if(q.get('loc'))   document.getElementById('loc').value   = q.get('loc');
-      if(q.get('h'))     document.getElementById('dur').value   = q.get('h');
-    })();
-
-    document.getElementById('ui').addEventListener('submit', (e)=>{
-      e.preventDefault();
-      const plate = document.getElementById('plate').value.trim();
-      const loc   = document.getElementById('loc').value.trim();
-      const sel   = document.getElementById('dur').value;
-
-      if(!plate || !loc || !sel){ show('Completează toate câmpurile.'); return; }
-
-      // calculează suma
-      const hours = sel === '0.5' ? 0.5 : parseInt(sel, 10);
-      const amount = priceForHours(hours).toFixed(2);
-
-      // completează formularul Worldpay
-      document.getElementById('cartId').value = `QRTP-${Date.now()}`;
-      document.getElementById('amount').value = amount;
-      document.getElementById('desc').value   = `Parking ${hours}h (${loc})`;
-      document.getElementById('name').value   = plate;
-      document.getElementById('M_plate').value= plate;
-      document.getElementById('M_loc').value  = loc;
-      document.getElementById('M_hours').value= String(hours);
-
-      // TRIMITE către Worldpay (redirecționează pe pagina lor)
-      document.getElementById('wp').submit();
-    });
-  </script>
-</body>
-</html>
     </div>
   </div>
 
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
   <script>
-    function toast(msg){
-      const d=document.createElement('div');
-      d.className='toast'; d.textContent=msg;
-      document.body.appendChild(d);
-      setTimeout(()=>d.remove(),1800);
+    // === PREȚURI (fără afișare pe pagină) ============================
+    // 30 min = £2.00 ; 1h–48h = £4.00 / oră
+    function calcAmount(hoursVal) {
+      const h = parseFloat(hoursVal);
+      if (isNaN(h)) return null;
+      if (h === 0.5) return 2.00;
+      return 4.00 * h;
     }
 
-    document.getElementById('f').addEventListener('submit', async (e) => {
+    // === UI helpers ===================================================
+    function toast(msg, t=1500){ const el=document.getElementById('toast'); el.textContent=msg; el.style.display='block'; setTimeout(()=>el.style.display='none', t); }
+
+    // === SUBMIT => către Worldpay ====================================
+    document.getElementById('f').addEventListener('submit', (e) => {
       e.preventDefault();
+
+      const instId = document.getElementById('instId').value.trim();
+      if (!/^\d{5,10}$/.test(instId)) { toast('Worldpay Installation ID lipsă sau invalid.'); return; }
+
       const plate = document.getElementById('plate').value.trim();
       const loc   = document.getElementById('loc').value.trim();
-      const dur   = document.getElementById('dur').value.trim();
+      const dur   = document.getElementById('dur').value;
+      if (!plate || !loc || !dur){ toast('Completează toate câmpurile.'); return; }
 
-      if(!plate || !loc || !dur){
-        toast('Te rugăm completează toate câmpurile.');
-        return;
-      }
+      const amount = calcAmount(dur);
+      if (amount === null) { toast('Durată invalidă.'); return; }
 
-      try {
-        const resp = await fetch('/.netlify/functions/create-payment', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ plate, loc, dur })
-        });
-        const json = await resp.json();
-        if(json.error){ toast(json.error); return; }
-        // Redirecționează către pagina Worldpay
-        window.location.href = json.paymentUrl;
-      } catch (err) {
-        toast('Server error. Încearcă din nou.');
-      }
+      // setăm câmpurile Worldpay
+      document.getElementById('amount').value = amount.toFixed(2);
+      document.getElementById('desc').value   = `Parking ${plate} @ ${loc} (${dur}h)`;
+      document.getElementById('cartId').value = `${Date.now()}-${plate.replace(/\s+/g,'')}`;
+
+      e.target.submit(); // POST către Worldpay (pagina lor de card)
     });
   </script>
-</htmly>
+</body>
 </html>
