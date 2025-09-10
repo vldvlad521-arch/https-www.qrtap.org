@@ -1,91 +1,105 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>QRtap Quick Parking</title>
-  <meta name="description" content="Enter details and pay securely. You’ll complete parking with RingGo.">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Parking</title>
+  <meta name="description" content="Enter details and continue securely to payment. We do not store your data." />
   <style>
-    :root{--brand:#14a84a;--brand2:#118c3e;--ink:#0a1114;--bg:#f5faf6;--card:#fff;--line:#e3eae4;--muted:#6b7d72}
-    *{box-sizing:border-box} html,body{margin:0;padding:0}
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#f6fbf7 0%,#edf6f0 100%);color:var(--ink)}
-    .wrap{max-width:900px;margin:0 auto;padding:28px 18px}
-    .hero{background:#0e2317;color:#fff;border-radius:18px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
-    .badge{background:rgba(255,255,255,.12);color:#d6efe1;padding:6px 10px;border-radius:999px;font-size:12px}
-    .card{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.05)}
-    label{display:block;margin:14px 0 6px;font-weight:600}
-    input{width:100%;padding:14px 12px;border-radius:12px;border:1px solid var(--line);background:#fbfdfb}
-    input::placeholder{color:#95a69a}
-    .row{display:grid;gap:12px;grid-template-columns:1fr 1fr}
-    @media (max-width:760px){.row{grid-template-columns:1fr}}
-    .btn{display:inline-block;width:100%;text-align:center;margin-top:14px;padding:15px 18px;border-radius:14px;border:none;cursor:pointer;background:var(--brand);color:#fff;font-weight:800}
-    .btn:hover{background:var(--brand2)}
-    .muted{color:var(--muted);font-size:12px;margin-top:6px}
+    :root{
+      --bg:#0b1020; --panel:#121726; --text:#eaf1ee;
+      --muted:#9ec1ac; --line:#1f2f27; --accent:#1db954; /* verde */
+      --accent-contrast:#0a2718;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
+    .bar{background:var(--accent); color:#fff; padding:18px 20px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:22px; letter-spacing:.2px; border-bottom:2px solid var(--accent-contrast)}
+    .wrap{max-width:860px; margin:22px auto; padding:0 16px}
+    .card{background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:20px; box-shadow:0 10px 28px rgba(0,0,0,.35)}
+    p.hint{margin:10px 0 18px; color:var(--muted)}
+    label{display:block; margin:14px 0 6px; font-weight:600}
+    input{width:100%; background:#0f1424; border:1px solid var(--line); color:var(--text); padding:14px; border-radius:12px; outline:none}
+    input::placeholder{color:#7a8c86}
+    .row{display:grid; gap:12px; grid-template-columns:1fr}
+    .btn{display:inline-block; width:100%; text-align:center; border-radius:14px; padding:16px 18px; font-weight:800; cursor:pointer; border:0; background:var(--accent); color:#fff}
+    .btn:hover{filter:brightness(1.05)}
+    .note{font-size:13px; color:#a6c2b3; margin-top:10px}
+    .badge{font-size:12px; color:#7ad39c; background:#064f2b; border-radius:999px; padding:4px 10px}
+    @media (max-width:700px){ .row{grid-template-columns:1fr} }
+    .error{color:#ffb4b4; font-size:13px; margin-top:6px; display:none}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="hero">
-      <h1 style="margin:0;font-size:22px">QRtap Quick Parking</h1>
-      <span class="badge">qrtap.org</span>
-    </div>
+  <div class="bar">Parking</div>
 
+  <div class="wrap">
     <div class="card">
-      <p style="margin:0 0 8px;color:#365442">
-        Fill in your details, then press <b>Pay</b>. You’ll be redirected to a secure Stripe checkout.
-        After payment, we’ll send you to RingGo to complete parking.
+      <div class="top">
+        <span class="badge">qrtap.org</span>
+      </div>
+
+      <p class="hint">
+        Fill in your details, then press <b>Next</b>. You’ll be redirected to a secure Stripe checkout.
+        We do not process or store card data.
       </p>
 
-      <form id="f" onsubmit="return false">
+      <form id="f" autocomplete="on">
         <label for="plate">Car plate number</label>
-        <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required>
+        <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required />
 
         <label for="loc">Parking location (code or name)</label>
-        <input id="loc" name="loc" placeholder="e.g. 35386 or street name" required>
+        <input id="loc" name="loc" placeholder="e.g. RingGo code or address" required />
 
-        <div class="row">
-          <div>
-            <label for="dur">Duration (hours)</label>
-            <input id="dur" name="dur" inputmode="decimal" placeholder="e.g. 2" required>
-            <div class="muted">Price is calculated at checkout.</div>
-          </div>
-        </div>
+        <label for="dur">Duration (hours)</label>
+        <input id="dur" name="dur" inputmode="numeric" pattern="[0-9]{1,3}" placeholder="e.g. 2" required />
+        <div id="err" class="error">Please enter a duration between 1 and 999 hours.</div>
 
-        <button id="pay" class="btn" type="submit">Pay</button>
-        <div class="muted">We do not process or store card data – payment is on Stripe’s secure page.</div>
+        <div style="margin:18px 0 6px"></div>
+        <button type="submit" class="btn">Next →</button>
+
+        <p class="note">
+          Price is calculated at checkout. Payment happens on Stripe’s secure page.
+        </p>
       </form>
     </div>
   </div>
 
   <script>
-    // Prefill ?loc=12345 from QR
-    (function(){
-      const p=new URLSearchParams(location.search);
-      const loc=p.get('loc'); if(loc) document.getElementById('loc').value=loc;
-      const saved=localStorage.getItem('plate'); if(saved) document.getElementById('plate').value=saved;
-    })();
+    // 1) UPDATE THIS to your real backend endpoint that creates a Stripe Checkout Session.
+    //    Example if you use Netlify Functions: "/.netlify/functions/create-checkout-session"
+    const STRIPE_SESSION_ENDPOINT = "/.netlify/functions/create-checkout-session";
 
-    document.getElementById('pay').addEventListener('click', async ()=>{
+    const form = document.getElementById('f');
+    const err  = document.getElementById('err');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
       const plate = document.getElementById('plate').value.trim();
       const loc   = document.getElementById('loc').value.trim();
       const dur   = document.getElementById('dur').value.trim();
-      if(!plate || !loc || !dur){ alert('Please complete all fields.'); return; }
 
-      try{
-        const res = await fetch('/.netlify/functions/create-checkout-session', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ plate, loc, dur })
-        });
-        if(!res.ok){ throw new Error('Server error'); }
-        const data = await res.json();
-        // salvează plăcuța doar local pentru UX
-        localStorage.setItem('plate', plate);
-        // du utilizatorul la Stripe Checkout
-        window.location.href = data.url;
-      }catch(e){
-        alert('Could not start checkout. Please try again in a moment.');
+      // Simple validation for duration 1..999
+      if(!/^[0-9]{1,3}$/.test(dur) || Number(dur) < 1){
+        err.style.display = 'on';
+        return;
       }
+      err.style.display = 'none';
+
+      // Optional: keep values for the next page (in case you need them later)
+      try {
+        localStorage.setItem('qp_plate', plate);
+        localStorage.setItem('qp_loc', loc);
+        localStorage.setItem('qp_dur', dur);
+      } catch(_) {}
+
+      // Redirect to your backend which creates a Stripe Checkout Session,
+      // then redirects to Stripe. Common approach:
+      //  - Backend reads ?plate=&loc=&dur=
+      //  - Creates a Checkout Session with Stripe SDK
+      //  - Responds with 303 redirect to session.url
+      const params = new URLSearchParams({ plate, loc, dur }).toString();
+      window.location.href = `${STRIPE_SESSION_ENDPOINT}?${params}`;
     });
   </script>
 </body>
