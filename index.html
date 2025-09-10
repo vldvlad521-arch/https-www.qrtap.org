@@ -1,41 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  function RingGo
-  <meta charset="UTF-8">
-  <title>RingGo Quick Parking</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QRtap Parking</title>
+  <style>
+    body{font-family:Arial, sans-serif;background:#f5f5f7;margin:0;padding:40px}
+    .card{max-width:420px;margin:0 auto;background:#fff;padding:22px;border-radius:14px;box-shadow:0 4px 10px rgba(0,0,0,.1)}
+    h1{text-align:center;margin:0 0 10px}
+    label{display:block;margin-top:12px;font-weight:600}
+    input{width:100%;padding:12px;margin-top:6px;border:1px solid #ccc;border-radius:10px}
+    .btn{width:100%;margin-top:18px;padding:14px;background:#28a745;color:#fff;border:none;border-radius:10px;font-weight:800;cursor:pointer}
+    .btn:hover{background:#218838}
+    .muted{font-size:12px;color:#666;margin-top:12px;text-align:center}
+  </style>
 </head>
-<body style="font-family: Arial; text-align:center; margin-top:40px; background:#f4f4f4;">
+<body>
+  <div class="card">
+    <h1>QRtap Quick Parking</h1>
 
-  <h1 style="color:#2c974b;">myRingGo<
-  <p>RingGo</p>
+    <form id="f">
+      <label for="plate">Car plate number</label>
+      <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required />
 
-  <input id="plate" placeholder="Număr mașină (ex: B12XY)" style="margin:5px;padding:8px;width:250px;"><br>
-  <input id="location" placeholder="Cod locație (ex: 35356)" style="margin:5px;padding:8px;width:250px;"><br>
-  <input id="duration" placeholder="Durata (ore)" style="margin:5px;padding:8px;width:250px;"><br>
+      <label for="loc">Parking location (code or name)</label>
+      <input id="loc" name="loc" placeholder="e.g. 12345" required />
 
-  <button onclick="RingGo.co.uk()" style="margin-top:10px;padding:10px 20px;background:#2ea44f;color:white;border:none;border-radius:5px;cursor:pointer;">
-    Continuă la RingGo
-  </button>
+      <button type="submit" class="btn">Pay</button>
+    </form>
+
+    <p class="muted">Cardul se introduce pe pagina sigură SumUp.</p>
+  </div>
 
   <script>
-    function RingGo.co.uk(ok) {
-      const plate = document.getElementById("plate").value;
-      const location = document.getElementById("location").value;
-      const duration = document.getElementById("duration").value;
+    // 🔗 Pune aici linkul tău SumUp (reutilizabil, în GBP)
+    // ex: "https://pay.sumup.com/b2c/XXXXXXXXXX"
+    const SUMUP_URL = "https://pay.ringgo.co.uk/b2c/X0J9V5NWJT"; // ← schimbă cu linkul tău preferat
 
-      if (!plate || !location || !duration) {
-        alert("Te rog completează toate câmpurile!");
-        return;
-      }
+    document.getElementById('f').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const plate = document.getElementById('plate').value.trim();
+      const loc   = document.getElementById('loc').value.trim();
+      if (!plate || !loc) { alert('Completează câmpurile.'); return; }
 
-      // Construim linkul spre RingGo.co.uk
-      const url = `https://myringgo.co.uk/bookparking?vrm=${encodeURIComponent(plate)}&location=${encodeURIComponent(location)}&duration=${encodeURIComponent(duration)}`;
+      // Atașăm doar pentru identificare (SumUp nu schimbă suma din query)
+      const qs = new URLSearchParams({ plate, loc }).toString();
+      const url = SUMUP_URL + (SUMUP_URL.includes('?') ? '&' : '?') + qs;
 
-      // Redirecționăm direct utilizatorul
       window.location.href = url;
-    }
+    });
   </script>
-
 </body>
 </html>
