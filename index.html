@@ -1,25 +1,112 @@
-// server.js
-import express from "express";
-import Stripe from "stripe";
-import cors from "cors";
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>QRtap – Quick Parking (Stripe)</title>
+  <meta name="description" content="Pay for parking securely via Stripe Checkout.">
+  <style>
+    body{font-family:system-ui,Arial;background:#f5f7fb;margin:0;padding:24px}
+    .card{max-width:420px;margin:0 auto;background:#fff;border-radius:12px;padding:20px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+    h1{margin:0 0 10px;font-size:20px;text-align:center}
+    label{display:block;margin:10px 0 6px;font-weight:600}
+    input,select,button{width:100%;padding:12px;border:1px solid #d6d9e0;border-radius:10px;font-size:15px}
+    button{background:#111827;color:#fff;font-weight:800;cursor:pointer;margin-top:8px}
+    .note{color:#6b7280;font-size:13px;margin-top:8px;text-align:center}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>QRtap – Pay &amp; Park</h1>
+    <form id="f">
+      <label for="plate">Car plate number</label>
+      <input id="plate" required placeholder="e.g. AB12 CDE" autocomplete="off">
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+      <label for="loc">Parking location (code or name)</label>
+      <input id="loc" required placeholder="e.g. 7001 or street name" autocomplete="off">
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // sk_test_...
+      <label for="dur">Duration</label>
+      <select id="dur" required>
+        <option value="">Choose…</option>
+        <option value="0.5">30 min (£2)</option>
+        <option value="1">1 hour (£4)</option>
+        <option value="2">2 hours (£8)</option>
+        <option value="4">4 hours (£16)</option>
+        <option value="24">1 day (£96)</option>
+      </select>
 
-// calculează suma (în pence) după durată
+      <button type="submit">Pay</button>
+    </form>
+    <p class="note">Card details are entered on Stripe’s secure page. Apple Pay / Google Pay are supported.</p>
+  </div>
+
+  <script>
+    // Endpointul serverless Netlify:
+    const ENDPOINT = "/.netlify/functions/create-checkout";
+
+    // Pre-umplere din QR (optional): ?plate=AB12CDE&loc=7001&h=2
+    (function(){
+      const q = new URLSearchParams(location.search);
+      if(q.get('plate')) document.getElementById('plate').value = q.get('plate').toUpperCase();
+      if(q.get('loc'))   document.getElementById('loc').value   = q.get('loc');
+      if(q.get('h'))     document.getElementById('dur').value   = q.get('h');
+    })();
+
+    document.getElementById('f').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const plate = document.getElementById('plate').value.trim();
+      const loc   = document.getElementById('loc').value.trim();
+      const h     = document.getElementById('dur').value;
+
+      if(!plate || !loc || !h){ alert('Complete all fields.'); return; }
+
+      try {
+        const r = await fetch(ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ plate, loc, h })
+        });
+        const data = await r.json();
+        if (data.url) window.location.href = data.url; // Stripe Checkout
+        else alert(data.error || "Server error. Check /create-checkout.");
+      } catch (err) {
+        alert("Network error: " + err.message);
+      }
+    });
+  </script>
+</body>
+</html>// netlify/functions/create-checkout.js
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
+// £2 / 30 min ; £4 / oră
 function pricePence(hoursStr) {
   const h = parseFloat(hoursStr);
   if (isNaN(h)) throw new Error("Invalid duration");
-  if (h === 0.5) return 200;           // £2.00
-  return Math.round(h * 400);          // £4.00 / oră
+  if (h === 0.5) return 200;        // £2.00
+  return Math.round(h * 400);       // £4.00 / hour
 }
 
-app.post("/create-checkout", async (req, res) => {
+exports.handler = async (event) => {
+  // CORS preflight
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    };
+  }
+
+  if (event.httpMethod !== "POST") {
+    return { statusCode: 405, body: "Method Not Allowed" };
+  }
+
   try {
-    const { plate, loc, h } = req.body;
+    const { plate, loc, h } = JSON.parse(event.body || "{}");
+    if (!plate || !loc || !h) throw new Error("Missing fields");
+
     const amount = pricePence(h);
 
     const session = await stripe.checkout.sessions.create({
@@ -35,21 +122,27 @@ app.post("/create-checkout", async (req, res) => {
           quantity: 1,
         },
       ],
-      // URLs după plată
       success_url: "https://qrtap.org/success.html",
-      cancel_url: "https://qrtap.org/cancel.html",
-      // Apple Pay / Google Pay on by default
-      payment_method_types: ["card"],
-      allow_promotion_codes: false,
-      billing_address_collection: "auto",
+      cancel_url:  "https://qrtap.org/cancel.html",
+      payment_method_types: ["card"], // Apple/Google Pay vin automat când sunt disponibile
     });
 
-    res.json({ url: session.url });
+    return {
+      statusCode: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+      body: JSON.stringify({ url: session.url }),
+    };
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: err.message });
+    return {
+      statusCode: 400,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+      body: JSON.stringify({ error: err.message }),
+    };
   }
-});
-
-app.listen(4242, () => console.log("Server on http://localhost:4242"));
-STRIPE_SECRET_KEY=sk_test_xxxxxxxxxxxxxxxxxxxxxxxxx
+};
