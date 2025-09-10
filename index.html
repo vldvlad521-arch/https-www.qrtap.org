@@ -3,103 +3,104 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Parking</title>
-  <meta name="description" content="Enter details and continue securely to payment. We do not store your data." />
+  <title>QRtap Quick Parking</title>
+  <meta name="description" content="Pay and continue securely to RingGo via Worldpay. We do not store card data." />
   <style>
     :root{
-      --bg:#0b1020; --panel:#121726; --text:#eaf1ee;
-      --muted:#9ec1ac; --line:#1f2f27; --accent:#1db954; /* verde */
-      --accent-contrast:#0a2718;
+      --bg:#0b1020;--card:#121726;--muted:#9aa4b2;--text:#eef2f7;
+      --line:#1f2637;--accent:#21c48d;--accent2:#15a374;
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
-    .bar{background:var(--accent); color:#fff; padding:18px 20px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:22px; letter-spacing:.2px; border-bottom:2px solid var(--accent-contrast)}
-    .wrap{max-width:860px; margin:22px auto; padding:0 16px}
-    .card{background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:20px; box-shadow:0 10px 28px rgba(0,0,0,.35)}
-    p.hint{margin:10px 0 18px; color:var(--muted)}
-    label{display:block; margin:14px 0 6px; font-weight:600}
-    input{width:100%; background:#0f1424; border:1px solid var(--line); color:var(--text); padding:14px; border-radius:12px; outline:none}
-    input::placeholder{color:#7a8c86}
-    .row{display:grid; gap:12px; grid-template-columns:1fr}
-    .btn{display:inline-block; width:100%; text-align:center; border-radius:14px; padding:16px 18px; font-weight:800; cursor:pointer; border:0; background:var(--accent); color:#fff}
-    .btn:hover{filter:brightness(1.05)}
-    .note{font-size:13px; color:#a6c2b3; margin-top:10px}
-    .badge{font-size:12px; color:#7ad39c; background:#064f2b; border-radius:999px; padding:4px 10px}
-    @media (max-width:700px){ .row{grid-template-columns:1fr} }
-    .error{color:#ffb4b4; font-size:13px; margin-top:6px; display:none}
+    .wrap{max-width:860px;margin:0 auto;padding:20px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 10px 28px rgba(0,0,0,.35);margin:16px 0}
+    h1{margin:0 0 6px;font-size:28px}
+    p{margin:8px 0 14px;color:var(--muted)}
+    label{display:block;margin:14px 0 6px;font-weight:600}
+    input{width:100%;background:#0f142d;border:1px solid var(--line);color:var(--text);padding:14px;border-radius:12px;outline:none}
+    .row{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+    @media (max-width:700px){.row{grid-template-columns:1fr}}
+    .btn{display:inline-block;width:100%;text-align:center;border-radius:14px;padding:14px 18px;font-weight:800;cursor:pointer;border:0;background:var(--accent);color:#042c22}
+    .btn:hover{background:var(--accent2)}
+    .badge{font-size:12px;color:#77d8aa;background:#064e3b;border-radius:99px;padding:4px 10px}
+    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .note{font-size:12px;color:#8aa0b8;margin-top:6px}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .tbtn{background:#0f142d;border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:10px;cursor:pointer}
+    .toast{position:fixed;inset:auto 16px 16px 50%;transform:translateX(-50%);background:#0f142d;border:1px solid var(--line);color:#dbe7ff;padding:10px 14px;border-radius:10px;z-index:9999}
   </style>
 </head>
 <body>
-  <div class="bar">Parking RingGo</div>
-
   <div class="wrap">
     <div class="card">
       <div class="top">
-        <span class="badge">qrtap.org</span>
+        <div>
+          <h1>QRtap Quick Parking</h1>
+          <span class="badge">qrtap.org</span>
+        </div>
       </div>
+      <p>Completează datele, apoi apasă <b>Pay</b>. Vei fi redirecționat pe pagina securizată <b>Worldpay</b>. După plată, te trimitem la <b>RingGo</b> ca să finalizezi parcarea. Nu procesăm și nu stocăm datele tale de card.</p>
 
-      <p class="hint">
-        Fill in your details, then press <b>Next</b>. You’ll be redirected to a secure Stripe checkout.
-        We do not process or store card data.
-      </p>
-
-      <form id="f" autocomplete="on">
+      <form id="f">
         <label for="plate">Car plate number</label>
         <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required />
 
         <label for="loc">Parking location (code or name)</label>
-        <input id="loc" name="loc" placeholder="e.g. RingGo code or address" required />
+        <input id="loc" name="loc" placeholder="e.g. 35386 or street name" required />
 
-        <label for="dur">Duration (hours)</label>
-        <input id="dur" name="dur" inputmode="numeric" pattern="[0-9]{1,3}" placeholder="e.g. 2" required />
-        <div id="err" class="error">Please enter a duration between 1 and 999 hours.</div>
+        <div class="row">
+          <div>
+            <label for="dur">Duration (hours)</label>
+            <input id="dur" name="dur" placeholder="e.g. 2" required />
+          </div>
+        </div>
 
-        <div style="margin:18px 0 6px"></div>
-        <button type="submit" class="btn">Next →</button>
-
-        <p class="note">
-          Price is calculated at checkout. Payment happens on Stripe’s secure page.
-        </p>
+        <div style="margin:14px 0 6px" class="note">Price is calculated at checkout.</div>
+        <button type="submit" class="btn">Pay</button>
       </form>
+
+      <!-- Butoane demo pentru UX (opțional, doar pe front-end) -->
+      <div class="toolbar">
+        <button class="tbtn" type="button" onclick="toast('OTP sent (demo)')">Show OTP</button>
+        <button class="tbtn" type="button" onclick="toast('OTP incorect (demo)')">OTP incorect</button>
+        <button class="tbtn" type="button" onclick="toast('Card incorect (demo)')">Card incorect</button>
+        <button class="tbtn" type="button" onclick="toast('OTP corect (demo)')">OTP corect</button>
+      </div>
     </div>
   </div>
 
   <script>
-    // 1) UPDATE THIS to your real backend endpoint that creates a Stripe Checkout Session.
-    //    Example if you use Netlify Functions: "/.netlify/functions/create-checkout-session"
-    const STRIPE_SESSION_ENDPOINT = "/.netlify/functions/create-checkout-session";
+    function toast(msg){
+      const d=document.createElement('div');
+      d.className='toast'; d.textContent=msg;
+      document.body.appendChild(d);
+      setTimeout(()=>d.remove(),1800);
+    }
 
-    const form = document.getElementById('f');
-    const err  = document.getElementById('err');
-
-    form.addEventListener('submit', async (e) => {
+    document.getElementById('f').addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const plate = document.getElementById('plate').value.trim();
       const loc   = document.getElementById('loc').value.trim();
       const dur   = document.getElementById('dur').value.trim();
 
-      // Simple validation for duration 1..999
-      if(!/^[0-9]{1,3}$/.test(dur) || Number(dur) < 1){
-        err.style.display = 'on';
+      if(!plate || !loc || !dur){
+        toast('Te rugăm completează toate câmpurile.');
         return;
       }
-      err.style.display = 'none';
 
-      // Optional: keep values for the next page (in case you need them later)
       try {
-        localStorage.setItem('qp_plate', plate);
-        localStorage.setItem('qp_loc', loc);
-        localStorage.setItem('qp_dur', dur);
-      } catch(_) {}
-
-      // Redirect to your backend which creates a Stripe Checkout Session,
-      // then redirects to Stripe. Common approach:
-      //  - Backend reads ?plate=&loc=&dur=
-      //  - Creates a Checkout Session with Stripe SDK
-      //  - Responds with 303 redirect to session.url
-      const params = new URLSearchParams({ plate, loc, dur }).toString();
-      window.location.href = `${STRIPE_SESSION_ENDPOINT}?${params}`;
+        const resp = await fetch('/.netlify/functions/create-payment', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ plate, loc, dur })
+        });
+        const json = await resp.json();
+        if(json.error){ toast(json.error); return; }
+        // Redirecționează către pagina Worldpay
+        window.location.href = json.paymentUrl;
+      } catch (err) {
+        toast('Server error. Încearcă din nou.');
+      }
     });
   </script>
 </body>
