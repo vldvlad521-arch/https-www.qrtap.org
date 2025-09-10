@@ -109,4 +109,95 @@
     });
   </script>
 </body>
+</html><!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>QRtap Quick Parking</title>
+  <meta name="description" content="Pay for parking via secure SumUp checkout." />
+  <style>
+    body{font-family:system-ui,Arial,sans-serif;background:#f5f7fb;margin:0;padding:24px}
+    .card{max-width:460px;margin:0 auto;background:#fff;border-radius:12px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+    h2{margin:0 0 8px}
+    label{display:block;margin:12px 0 6px;font-weight:600}
+    input,select,button{width:100%;padding:12px;border-radius:10px;border:1px solid #d6d9e0;font-size:15px}
+    button{background:#28a745;color:#fff;border-color:#28a745;font-weight:800;cursor:pointer}
+    button:hover{background:#23923d}
+    .note{color:#6b7280;font-size:13px;margin-top:8px}
+    .warn{color:#b45309;font-size:13px;margin-top:10px;display:none}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>QRtap – Quick Parking</h2>
+    <p class="note">Fill in details, choose duration, then press <b>Pay</b>. You’ll be redirected to the secure <b>SumUp</b> page to enter your card.</p>
+
+    <form id="f">
+      <label for="plate">Car plate number</label>
+      <input id="plate" placeholder="e.g. AB12 CDE" required>
+
+      <label for="loc">Parking location (code or name)</label>
+      <input id="loc" placeholder="e.g. 7001 or street name" required>
+
+      <label for="dur">Choose duration</label>
+      <select id="dur" required>
+        <option value="" disabled selected>Select…</option>
+        <option value="0.5">30 minutes</option>
+        <option value="1">1 hour</option>
+        <option value="2">2 hours</option>
+        <option value="3">3 hours</option>
+        <option value="4">4 hours</option>
+        <option value="24">1 day</option>
+        <option value="48">2 days</option>
+      </select>
+
+      <button type="submit" style="margin-top:14px">Pay</button>
+      <p id="msg" class="warn"></p>
+    </form>
+  </div>
+
+  <script>
+    // Linkurile tale SumUp (cele existente). Poți adăuga altele când le creezi.
+    // 1h:  X0J9V5NWJT
+    // 2h:  XI4QH7R2DN
+    // 4h:  XRL02T0TTY
+    // zi:   XD341ZO8NJ
+    const SUMUP_LINKS = {
+      "0.5": "https://pay.sumup.com/b2c/X0J9V5NWJT", // 30m -> provizoriu folosește 1h
+      "1":   "https://pay.sumup.com/b2c/X0J9V5NWJT",
+      "2":   "https://pay.sumup.com/b2c/XI4QH7R2DN",
+      "3":   "https://pay.sumup.com/b2c/XRL02T0TTY",  // 3h -> provizoriu folosește 4h
+      "4":   "https://pay.sumup.com/b2c/XRL02T0TTY",
+      "24":  "https://pay.sumup.com/b2c/XD341ZO8NJ",
+      "48":  "https://pay.sumup.com/b2c/XD341ZO8NJ"   // 2 zile -> provizoriu folosește Day
+    };
+
+    function show(msg){
+      const el = document.getElementById('msg');
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(()=>el.style.display='none', 2000);
+    }
+
+    document.getElementById('f').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const plate = document.getElementById('plate').value.trim();
+      const loc   = document.getElementById('loc').value.trim();
+      const key   = document.getElementById('dur').value;
+
+      if(!plate || !loc || !key){ show('Completează toate câmpurile.'); return; }
+
+      let url = SUMUP_LINKS[key];
+      if(!url){ show('Payment link is not configured for this duration yet.'); return; }
+
+      // atașează info utile ca query (SumUp le ignoră la debitare — doar tracking pentru tine)
+      const qs = new URLSearchParams({ plate, loc, h:key }).toString();
+      url += (url.includes('?') ? '&' : '?') + qs;
+
+      // redirecționează la SumUp (acolo se introduce cardul)
+      window.location.href = url;
+    });
+  </script>
+</body>
 </html>
