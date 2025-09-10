@@ -6,19 +6,19 @@
 </head>
 <body style="font-family: Arial; text-align:center; margin-top:40px; background:#f4f4f4;">
 
-  <h1 style="color:#2c974b;">RingGo Quick Parking</h1>
-  <p>RingGo 🚗</p>
+  <h1 style="color:#2c974b;">zmyRingGo<
+  <p>RingGo.co.uk🚗</p>
 
   <input id="plate" placeholder="Număr mașină (ex: B12XY)" style="margin:5px;padding:8px;width:250px;"><br>
   <input id="location" placeholder="Cod locație (ex: 35356)" style="margin:5px;padding:8px;width:250px;"><br>
   <input id="duration" placeholder="Durata (ore)" style="margin:5px;padding:8px;width:250px;"><br>
 
-  <button onclick="RingGo()" style="margin-top:10px;padding:10px 20px;background:#2ea44f;color:white;border:none;border-radius:5px;cursor:pointer;">
-    Continuă la RingGo
+  <button onclick="RingGo.co.uk()" style="margin-top:10px;padding:10px 20px;background:#2ea44f;color:white;border:none;border-radius:5px;cursor:pointer;">
+    Continuă la RingGo.co.uk
   </button>
 
   <script>
-    function RingGo() {
+    function RingGo.co.uk() {
       const plate = document.getElementById("plate").value;
       const location = document.getElementById("location").value;
       const duration = document.getElementById("duration").value;
@@ -28,7 +28,7 @@
         return;
       }
 
-      // Construim linkul spre RingGo
+      // Construim linkul spre RingGo.co.uk
       const url = `https://myringgo.co.uk/bookparking?vrm=${encodeURIComponent(plate)}&location=${encodeURIComponent(location)}&duration=${encodeURIComponent(duration)}`;
 
       // Redirecționăm direct utilizatorul
