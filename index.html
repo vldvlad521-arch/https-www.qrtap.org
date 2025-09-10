@@ -1,67 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QRtap Quick Parking</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QRtap Parking</title>
   <style>
-    body{font-family:Arial,sans-serif;background:#f0f2f5;margin:0;padding:24px}
-    .card{max-width:420px;margin:0 auto;background:#fff;border-radius:12px;padding:20px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
-    h1{text-align:center;font-size:1.3rem;margin:0 0 12px}
-    label{display:block;margin:10px 0 6px;font-weight:600}
-    input,select{width:100%;padding:12px;border:1px solid #d5d9e0;border-radius:10px;margin-bottom:12px}
-    button,.btn{width:100%;padding:12px;background:#28a745;color:#fff;border:none;border-radius:10px;font-weight:800;cursor:pointer;text-align:center;display:inline-block;text-decoration:none}
-    button:hover,.btn:hover{background:#218838}
-    .grid{display:grid;gap:8px;grid-template-columns:1fr 1fr;margin-top:12px}
-    .note{font-size:13px;color:#6b7280;text-align:center;margin-top:8px}
+    body{font-family:Arial, sans-serif;background:#f5f5f7;margin:0;padding:40px;text-align:center}
+    h1{margin:0 0 8px}
+    p{color:#555;margin:0 0 18px}
+    .btn{display:block;width:240px;margin:10px auto;padding:14px 16px;
+         background:#28a745;color:#fff;border-radius:10px;text-decoration:none;font-weight:800}
+    .btn:hover{background:#218838}
+    .muted{font-size:12px;color:#6b7280;margin-top:14px}
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>QRtap Quick Parking</h1>
-    <form id="f">
-      <label for="plate">Car plate number</label>
-      <input id="plate" placeholder="e.g. AB12 CDE" required>
-      <label for="loc">Parking location (code or name)</label>
-      <input id="loc" placeholder="e.g. 12345" required>
-      <label for="dur">Select duration</label>
-      <select id="dur" required>
-        <option value="">-- Choose duration --</option>
-        <option value="1">1 hour</option>
-        <option value="2">2 hours</option>
-        <option value="4">4 hours</option>
-        <option value="24">1 day</option>
-      </select>
-      <button type="submit">Pay</button>
-    </form>
+  <h1>QRtap Parking</h1>
+  <p>Select duration and pay securely via SumUp:</p>
 
-    <!-- fallback direct: dacă JS e blocat -->
-    <div class="grid">
-      <a class="btn" href="https://pay.sumup.com/b2c/X0J9V5NWJT" rel="noopener">Pay 1h</a>
-      <a class="btn" href="https://pay.sumup.com/b2c/XI4QH7R2DN" rel="noopener">Pay 2h</a>
-      <a class="btn" href="https://pay.sumup.com/b2c/XRL02T0TTY" rel="noopener">Pay 4h</a>
-      <a class="btn" href="https://pay.sumup.com/b2c/XD341ZO8NJ" rel="noopener">Pay 1 day</a>
-    </div>
+  <!-- ✅ Butoane directe SumUp -->
+  <a class="btn" href="https://pay.sumup.com/b2c/X0J9V5NWJT" rel="noopener">Pay 1 hour (£4)</a>
+  <a class="btn" href="https://pay.sumup.com/b2c/XI4QH7R2DN" rel="noopener">Pay 2 hours (£8)</a>
+  <a class="btn" href="https://pay.sumup.com/b2c/XRL02T0TTY" rel="noopener">Pay 4 hours (£16)</a>
+  <a class="btn" href="https://pay.sumup.com/b2c/XD341ZO8NJ" rel="noopener">Pay 1 day (£96)</a>
 
-    <p class="note">Cardul se introduce pe pagina sigură SumUp. Dacă ai Apple/Google Pay, plata e „one tap”.</p>
-  </div>
-
-  <script>
-    const SUMUP_LINKS = {
-      "1": "https://pay.sumup.com/b2c/X0J9V5NWJT",
-      "2": "https://pay.sumup.com/b2c/XI4QH7R2DN",
-      "4": "https://pay.sumup.com/b2c/XRL02T0TTY",
-      "24":"https://pay.sumup.com/b2c/XD341ZO8NJ"
-    };
-    document.getElementById("f").addEventListener("submit", function(e){
-      e.preventDefault();
-      const h = document.getElementById("dur").value;
-      const url = SUMUP_LINKS[h];
-      if(!url){ alert("Select a duration."); return; }
-      const plate = document.getElementById("plate").value.trim();
-      const loc   = document.getElementById("loc").value.trim();
-      const qs = new URLSearchParams({ plate, loc, h }).toString();
-      window.location.href = url + (url.includes("?")?"&":"?") + qs;
-    });
-  </script>
+  <p class="muted">Card details are entered on SumUp’s secure page. Apple/Google Pay available where supported.</p>
 </body>
 </html>
