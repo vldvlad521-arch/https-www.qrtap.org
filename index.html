@@ -1,28 +1,119 @@
-<script>
-  // Mapare ore -> link SumUp (pune aici link-urile tale reale)
-  const SUMUP_LINKS = {
-    1: "https://pay.sumup.com/b2c/X0J9V5NWJT",   // 1h
-    2: "https://pay.sumup.com/b2c/XI4QH7R2DN",   // 2h
-    3: "https://pay.sumup.com/b2c/XRLO2T0TTY",   // 3h
-    4: "https://pay.sumup.com/b2c/XD341ZO8NJ",   // 4h (sau zi)
-    day: "https://pay.sumup.com/b2c/XD341ZO8NJ"  // fallback pt. >4h/zi
-  };
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>QRtap Quick Parking</title>
+  <meta name="description" content="Enter your details and pay securely via SumUp.">
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, Arial, sans-serif;
+      background: #f2f2f2;
+      color: #222;
+    }
+    .wrap {
+      max-width: 420px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    }
+    h1 {
+      font-size: 22px;
+      margin: 0 0 10px;
+      color: #0a3d62;
+    }
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: 600;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+    .btn {
+      display: inline-block;
+      width: 100%;
+      text-align: center;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #fff;
+      background: #28a745;
+      border: none;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #218838;
+    }
+    p.note {
+      font-size: 13px;
+      color: #666;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>QRtap Quick Parking</h1>
+      <p>Fill in your details, then press <b>Pay</b>. You’ll be redirected to a secure <b>SumUp</b> checkout.  
+      After payment, we’ll send you to RingGo to complete parking.</p>
 
-  document.getElementById("f").addEventListener("submit", function (e) {
-    e.preventDefault();
+      <form id="f">
+        <label for="plate">Car plate number</label>
+        <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required>
 
-    const plate = document.getElementById("plate").value.trim();
-    const loc   = document.getElementById("loc").value.trim();
-    const hours = parseInt(document.getElementById("dur").value, 10) || 1;
+        <label for="loc">Parking location (code or name)</label>
+        <input id="loc" name="loc" placeholder="e.g. 35386 or street name" required>
 
-    // Alege link-ul dupa ore (1,2,3,4) – dacă e mai mult, trimitem pe „day”
-    let url = SUMUP_LINKS[hours] || SUMUP_LINKS.day;
+        <label for="dur">Duration (hours)</label>
+        <input id="dur" name="dur" placeholder="e.g. 2" required>
 
-    // (Optional) atașăm informațiile ca query string – SumUp le ignoră, dar te pot ajuta la tracking
-    const qs = new URLSearchParams({ plate, loc, h: String(hours) }).toString();
-    if (qs) url += (url.includes("?") ? "&" : "?") + qs;
+        <button type="submit" class="btn">Pay</button>
+      </form>
 
-    // Redirect către checkout-ul SumUp – acolo clientul își introduce cardul
-    window.location.href = url;
-  });
-</script>
+      <p class="note">We do not process or store card data – payment is on <b>SumUp</b>’s secure page.</p>
+    </div>
+  </div>
+
+  <script>
+    // Linkurile tale SumUp
+    const SUMUP_LINKS = {
+      1: "https://pay.sumup.com/b2c/X0J9V5NWJT",  // 1h
+      2: "https://pay.sumup.com/b2c/XI4QH7R2DN",  // 2h
+      3: "https://pay.sumup.com/b2c/XRL02T0TTY",  // 3h
+      4: "https://pay.sumup.com/b2c/XD341ZO8NJ",  // 4h
+      day: "https://pay.sumup.com/b2c/XD341ZO8NJ" // fallback
+    };
+
+    document.getElementById("f").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const plate = document.getElementById("plate").value.trim();
+      const loc = document.getElementById("loc").value.trim();
+      const hours = parseInt(document.getElementById("dur").value, 10) || 1;
+
+      // Alege linkul în funcție de ore
+      let url = SUMUP_LINKS[hours] || SUMUP_LINKS.day;
+
+      // Atașează info ca query string (opțional)
+      const qs = new URLSearchParams({ plate, loc, h: String(hours) }).toString();
+      url += (url.includes("?") ? "&" : "?") + qs;
+
+      // Redirect către SumUp
+      window.location.href = url;
+    });
+  </script>
+</body>
+</html>
