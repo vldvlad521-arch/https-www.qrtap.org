@@ -5,27 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QRtap Quick Parking</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#f0f2f5; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; }
-    .card { background:white; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); width:100%; max-width:400px; }
-    h1 { font-size:1.4em; margin-bottom:15px; text-align:center; }
-    label { display:block; margin:10px 0 5px; font-weight:bold; }
-    input, select { width:100%; padding:10px; margin-bottom:15px; border:1px solid #ccc; border-radius:6px; }
-    button { width:100%; padding:12px; background:#28a745; color:white; border:none; border-radius:6px; font-size:1em; cursor:pointer; }
-    button:hover { background:#218838; }
+    body { font-family: Arial, sans-serif; background:#f0f2f5; margin:0; padding:24px; }
+    .card { max-width:420px; margin:0 auto; background:#fff; border-radius:12px; padding:20px; box-shadow:0 6px 18px rgba(0,0,0,.08); }
+    h1 { font-size:1.3rem; margin:0 0 10px; text-align:center; }
+    label { display:block; margin:10px 0 6px; font-weight:600; }
+    input, select { width:100%; padding:12px; border:1px solid #d5d9e0; border-radius:10px; margin-bottom:12px; }
+    button, .btn-link { width:100%; padding:12px; background:#28a745; color:#fff; border:none; border-radius:10px; font-weight:800; cursor:pointer; text-align:center; display:inline-block; text-decoration:none; }
+    button:hover, .btn-link:hover { background:#218838; }
+    .muted { color:#6b7280; font-size:13px; text-align:center; margin-top:6px; }
+    .divider { margin:16px 0; text-align:center; color:#6b7280; font-size:12px; }
+    .grid { display:grid; gap:8px; grid-template-columns:1fr 1fr; }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>QRtap Quick Parking</h1>
+
+    <!-- Mod 1: Select + Pay (JS) -->
     <form id="f">
       <label for="plate">Car plate number</label>
-      <input id="plate" name="plate" required placeholder="e.g. AB12 CDE">
+      <input id="plate" placeholder="e.g. AB12 CDE" autocomplete="off" required>
 
       <label for="loc">Parking location (code or name)</label>
-      <input id="loc" name="loc" required placeholder="e.g. 12345">
+      <input id="loc" placeholder="e.g. 12345" autocomplete="off" required>
 
       <label for="dur">Select duration</label>
-      <select id="dur" name="dur" required>
+      <select id="dur" required>
         <option value="">-- Choose duration --</option>
         <option value="1">1 hour</option>
         <option value="2">2 hours</option>
@@ -35,26 +40,42 @@
 
       <button type="submit">Pay</button>
     </form>
+
+    <div class="divider">— or —</div>
+
+    <!-- Mod 2: Fallback 100% (fără JS) -->
+    <div class="grid">
+      <a class="btn-link" href="https://pay.sumup.com/b2c/X0J9V5NWJT" rel="noopener">Pay 1h</a>
+      <a class="btn-link" href="https://pay.sumup.com/b2c/XI4QH7R2DN" rel="noopener">Pay 2h</a>
+      <a class="btn-link" href="https://pay.sumup.com/b2c/XRL02T0TTY" rel="noopener">Pay 4h</a>
+      <a class="btn-link" href="https://pay.sumup.com/b2c/XD341ZO8NJ" rel="noopener">Pay 1 day</a>
+    </div>
+
+    <p class="muted">Card details are entered on SumUp’s secure page.</p>
   </div>
 
   <script>
-    // Doar 4 linkuri SumUp
+    // 4 linkuri SumUp
     const SUMUP_LINKS = {
-      "1": "https://pay.sumup.com/b2c/X0J9V5NWJT",  // 1h
-      "2": "https://pay.sumup.com/b2c/XI4QH7R2DN",  // 2h
-      "4": "https://pay.sumup.com/b2c/XRL02T0TTY",  // 4h
-      "24": "https://pay.sumup.com/b2c/XD341ZO8NJ"  // 1 zi
+      "1": "https://pay.sumup.com/b2c/X0J9V5NWJT",
+      "2": "https://pay.sumup.com/b2c/XI4QH7R2DN",
+      "4": "https://pay.sumup.com/b2c/XRL02T0TTY",
+      "24":"https://pay.sumup.com/b2c/XD341ZO8NJ"
     };
 
     document.getElementById("f").addEventListener("submit", function(e) {
       e.preventDefault();
       const hours = document.getElementById("dur").value;
       const url = SUMUP_LINKS[hours];
-      if (url) {
-        window.location.href = url;
-      } else {
-        alert("Durata selectată nu are link configurat.");
-      }
+      if (!url) { alert("Select a duration."); return; }
+
+      // (opțional) atașează info pt. tracking
+      const plate = document.getElementById("plate").value.trim();
+      const loc   = document.getElementById("loc").value.trim();
+      const qs = new URLSearchParams({ plate, loc, h:hours }).toString();
+      const finalUrl = url + (url.includes("?") ? "&" : "?") + qs;
+
+      window.location.href = finalUrl;
     });
   </script>
 </body>
