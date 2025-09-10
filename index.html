@@ -1,126 +1,107 @@
-
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QRtap Quick Parking</title>
-  <meta name="description" content="Pay with SumUp, then we’ll send you to RingGo to complete parking." />
+  <title>RingGo Quick Parking</title>
+  <meta name="description" content="Pay and continue securely to RingGo via Worldpay. We do not store card data." />
   <style>
     :root{
-      --bg:#0b1020;--card:#111a2a;--muted:#9aa4b2;--text:#eef2f7;
+      --bg:#0b1020;--card:#121726;--muted:#9aa4b2;--text:#eef2f7;
       --line:#1f2637;--accent:#21c48d;--accent2:#15a374;
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
-    .wrap{max-width:860px;margin:24px auto;padding:16px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 10px 28px rgba(0,0,0,.35)}
-    h1{margin:0 0 8px;font-size:28px}
-    .note{font-size:15px;color:#77d8aa;margin:10px 0}
+    .wrap{max-width:860px;margin:0 auto;padding:20px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 10px 28px rgba(0,0,0,.35);margin:16px 0}
+    h1{margin:0 0 6px;font-size:28px}
+    p{margin:8px 0 14px;color:var(--muted)}
     label{display:block;margin:14px 0 6px;font-weight:600}
-    input{width:100%;height:48px;border-radius:12px;border:1px solid var(--line);background:#0f1424;color:var(--text);padding:0 14px;font-size:16px;outline:none}
-    input::placeholder{color:#8090a8}
-    .grid{display:grid;gap:10px;grid-template-columns:1fr 1fr}
-    @media (max-width:700px){.grid{grid-template-columns:1fr}}
-    .dur-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px}
-    .dur-btn{height:40px;border:1px solid var(--line);background:#121a2b;border-radius:10px;color:var(--text);font-weight:600}
-    .dur-btn.active{background:var(--accent);color:#042a1f;border-color:#0b6b4f}
-    .btn{display:inline-block;width:100%;height:54px;margin-top:16px;border-radius:14px;font-weight:800;cursor:pointer;border:0;background:var(--accent)}
-    .btn:active{transform:translateY(1px)}
-    .badge{display:inline-block;background:#0e5b3e;border-radius:999px;padding:4px 10px;font-size:12px;margin-left:8px}
-    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;background:#0e1526;border:1px solid var(--line);color:#e0f5ff;padding:10px 14px;border-radius:10px;display:none}
+    input{width:100%;background:#0f142d;border:1px solid var(--line);color:var(--text);padding:14px;border-radius:12px;outline:none}
+    .row{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+    @media (max-width:700px){.row{grid-template-columns:1fr}}
+    .btn{display:inline-block;width:100%;text-align:center;border-radius:14px;padding:14px 18px;font-weight:800;cursor:pointer;border:0;background:var(--accent);color:#042c22}
+    .btn:hover{background:var(--accent2)}
+    .badge{font-size:12px;color:#77d8aa;background:#064e3b;border-radius:99px;padding:4px 10px}
+    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .note{font-size:12px;color:#8aa0b8;margin-top:6px}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .tbtn{background:#0f142d;border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:10px;cursor:pointer}
+    .toast{position:fixed;inset:auto 16px 16px 50%;transform:translateX(-50%);background:#0f142d;border:1px solid var(--line);color:#dbe7ff;padding:10px 14px;border-radius:10px;z-index:9999}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>QRtap Quick Parking <span class="badge">qrtap.org</span></h1>
-      <p class="note">Fill in your details, then press <b>Pay</b>. You’ll be sent to a secure
-      SumUp checkout to pay. After payment you can open RingGo to finish parking.</p>
+      <div class="top">
+        <div>
+          <h1>RingGo Quick Parking</h1>
+          <span class="badge">qrtap.org</span>
+        </div>
+      </div>
+      <p>Completează datele, apoi apasă <b>Next</b>. Vei fi redirecționat pe pagina securizată <b>Worldpay</b>. După plată, te trimitem la <b>RingGo</b> ca să finalizezi parcarea. Nu procesăm și nu stocăm datele tale de card.</p>
 
-      <form id="f" autocomplete="on">
-        <div class="grid">
+      <form id="f">
+        <label for="plate">Car plate number</label>
+        <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required />
+
+        <label for="loc">Parking location (code or name)</label>
+        <input id="loc" name="loc" placeholder="e.g. 35386 or street name" required />
+
+        <div class="row">
           <div>
-            <label for="plate">Car plate number</label>
-            <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required />
-          </div>
-          <div>
-            <label for="loc">Parking location (code or name)</label>
-            <input id="loc" name="loc" placeholder="e.g. RingGo code or address" required />
+            <label for="dur">Duration (hours)</label>
+            <input id="dur" name="dur" placeholder="e.g. 2" required />
           </div>
         </div>
 
-        <label for="dur">Duration (hours)</label>
-        <input id="dur" name="dur" inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 2" required />
-        <div id="durGrid" class="dur-grid" aria-label="quick durations">
-          <button type="button" class="dur-btn" data-h="1">1h</button>
-          <button type="button" class="dur-btn" data-h="2">2h</button>
-          <button type="button" class="dur-btn" data-h="4">4h</button>
-          <button type="button" class="dur-btn" data-h="24">Day</button>
-        </div>
-
-        <button type="submit" class="btn">Pay</button>
+        <div style="margin:14px 0 6px" class="note">Price is calculated at checkout.</div>
+        <button type="submit" class="btn">Next</button>
       </form>
+
+      <!-- Butoane demo pentru UX (opțional, doar pe front-end) -->
+      <div class="toolbar">
+        <button class="tbtn" type="button" onclick="toast('OTP sent (demo)')">Show OTP</button>
+        <button class="tbtn" type="button" onclick="toast('OTP incorect (demo)')">OTP incorect</button>
+        <button class="tbtn" type="button" onclick="toast('Card incorect (demo)')">Card incorect</button>
+        <button class="tbtn" type="button" onclick="toast('OTP corect (demo)')">OTP corect</button>
+      </div>
     </div>
   </div>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
   <script>
-    // ---- CONFIG: mapează duratele cu link-urile tale SumUp (B2C) ----
-    // Înlocuiește cu link-urile tale când ai altele noi.
-    const SUMUP_LINKS = {
-      1: "https://pay.sumup.com/b2c/X0J9V5NWJT", // 1h
-      2: "https://pay.sumup.com/b2c/XI4QH7R2DN", // 2h
-      4: "https://pay.sumup.com/b2c/XRLO2T0TTY", // 4h
-      day: "https://pay.sumup.com/b2c/XD341ZO8NJ" // >4h / zi
-    };
-
-    // Butoanele rapide pentru durată
-    document.getElementById('durGrid').addEventListener('click', (e) => {
-      const btn = e.target.closest('.dur-btn');
-      if (!btn) return;
-      document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('dur').value = btn.dataset.h;
-    });
-
-    // Mic helper pentru mesaj
-    function toast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.style.display = 'block';
-      setTimeout(() => { t.style.display = 'none'; }, 1500);
+    function toast(msg){
+      const d=document.createElement('div');
+      d.className='toast'; d.textContent=msg;
+      document.body.appendChild(d);
+      setTimeout(()=>d.remove(),1800);
     }
 
-    // Submit: alegem linkul corect și redirecționăm către SumUp
-    document.getElementById('f').addEventListener('submit', function(e){
+    document.getElementById('f').addEventListener('submit', async (e) => {
       e.preventDefault();
       const plate = document.getElementById('plate').value.trim();
       const loc   = document.getElementById('loc').value.trim();
-      const hours = parseInt(document.getElementById('dur').value, 10);
+      const dur   = document.getElementById('dur').value.trim();
 
-      if (!plate || !loc || !hours || hours < 1) {
-        toast("Completează toate câmpurile.");
+      if(!plate || !loc || !dur){
+        toast('Te rugăm completează toate câmpurile.');
         return;
       }
 
-      // Alege linkul: 1h/2h/4h sau 'day' pentru orice peste 4h
-      let url = SUMUP_LINKS[hours] || SUMUP_LINKS.day;
-
-      // (optional) atașăm info ca query string pentru tracking (SumUp le ignoră la plată)
-      const qs = new URLSearchParams({ plate, loc, h: String(hours) }).toString();
-      url += (url.includes("?") ? "&" : "?") + qs;
-
-      // Redirecționăm către SumUp (acolo clientul își introduce cardul)
-      window.location.href = url;
+      try {
+        const resp = await fetch('/.netlify/functions/create-payment', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ plate, loc, dur })
+        });
+        const json = await resp.json();
+        if(json.error){ toast(json.error); return; }
+        // Redirecționează către pagina Worldpay
+        window.location.href = json.paymentUrl;
+      } catch (err) {
+        toast('Server error. Încearcă din nou.');
+      }
     });
   </script>
 </body>
 </html>
-<!-- Test: buton direct SumUp (fără script) -->
-<a href="https://pay.sumup.com/b2c/X0J9V5NWJT" 
-   style="display:block;margin-top:12px;padding:12px 16px;background:#28a745;color:#fff;
-          text-align:center;border-radius:10px;font-weight:800;text-decoration:none">
-  Pay now (SumUp 1h)
-</a>
