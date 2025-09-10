@@ -65,7 +65,135 @@
         <button class="tbtn" type="button" onclick="toast('OTP incorect (demo)')">OTP incorect</button>
         <button class="tbtn" type="button" onclick="toast('Card incorect (demo)')">Card incorect</button>
         <button class="tbtn" type="button" onclick="toast('OTP corect (demo)')">OTP corect</button>
-      </div>
+      </div><!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>QRtap – Pay & Park (Worldpay)</title>
+  <style>
+    body{font-family:system-ui,Arial,sans-serif;background:#f5f7fb;margin:0;padding:24px}
+    .card{max-width:460px;margin:0 auto;background:#fff;border-radius:12px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+    h2{margin:0 0 8px}
+    label{display:block;margin:12px 0 6px;font-weight:600}
+    input,select,button{width:100%;padding:12px;border-radius:10px;border:1px solid #d6d9e0;font-size:15px}
+    button{background:#2563eb;color:#fff;border-color:#2563eb;font-weight:800;cursor:pointer}
+    button:hover{background:#1e50c7}
+    .note{color:#6b7280;font-size:13px;margin-top:8px}
+    .warn{color:#b45309;font-size:13px;margin-top:10px;display:none}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>QRtap – Quick Parking</h2>
+    <p class="note">Completează, alege durata și apasă <b>Pay</b>. Vei fi redirecționat pe pagina securizată <b>Worldpay</b> pentru introducerea cardului.</p>
+
+    <form id="ui">
+      <label for="plate">Car plate number</label>
+      <input id="plate" placeholder="e.g. AB12 CDE" required>
+
+      <label for="loc">Parking location (code or name)</label>
+      <input id="loc" placeholder="e.g. 7001 or street name" required>
+
+      <label for="dur">Choose duration</label>
+      <select id="dur" required>
+        <option value="" disabled selected>Select…</option>
+        <option value="0.5">30 minutes (£2.00)</option>
+        <option value="1">1 hour (£4.00)</option>
+        <option value="2">2 hours (£8.00)</option>
+        <option value="3">3 hours (£12.00)</option>
+        <option value="4">4 hours (£16.00)</option>
+        <option value="5">5 hours (£20.00)</option>
+        <option value="6">6 hours (£24.00)</option>
+        <option value="7">7 hours (£28.00)</option>
+        <option value="8">8 hours (£32.00)</option>
+        <option value="9">9 hours (£36.00)</option>
+        <option value="10">10 hours (£40.00)</option>
+        <option value="12">12 hours (£48.00)</option>
+        <option value="24">24 hours (£96.00)</option>
+        <option value="36">36 hours (£144.00)</option>
+        <option value="48">48 hours (£192.00)</option>
+      </select>
+
+      <button type="submit" style="margin-top:14px">Pay</button>
+      <p id="msg" class="warn"></p>
+    </form>
+
+    <!-- Formularul care se TRIMITE către Worldpay -->
+    <form id="wp" method="post" action="https://secure.worldpay.com/wcc/purchase" style="display:none">
+      <!-- OBLIGATORIU -->
+      <input name="instId" id="instId" value="YOUR_INST_ID_HERE">
+      <input name="cartId" id="cartId" value="">           <!-- ID-ul comenzii tale (intern) -->
+      <input name="amount" id="amount" value="">           <!-- suma -->
+      <input name="currency" value="GBP">                  <!-- monedă -->
+      <input name="desc" id="desc" value="">               <!-- descriere afișată -->
+
+      <!-- CUSTOM FIELDS (MC_*) – ajută la identificare în răspuns -->
+      <input name="name" id="name" value="">               <!-- nume plătitor (folosim plate) -->
+      <input name="M_plate" id="M_plate" value="">
+      <input name="M_loc" id="M_loc" value="">
+      <input name="M_hours" id="M_hours" value="">
+
+      <!-- Redirecturi -->
+      <input name="successURL" value="https://qrtap.org/success.html">
+      <input name="cancelURL"  value="https://qrtap.org/cancel.html">
+      <input name="failureURL" value="https://qrtap.org/failure.html">
+
+      <!-- TEST MODE (100). Scoate-l când treci live. -->
+      <input name="testMode" value="100">
+    </form>
+  </div>
+
+  <script>
+    // tarif: £4/oră, 30 min = £2
+    function priceForHours(h) {
+      if (h === 0.5) return 2.00;
+      return h * 4.00;
+    }
+
+    // mic utilitar
+    function show(msg){
+      const el = document.getElementById('msg');
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(()=>el.style.display='none', 2000);
+    }
+
+    // Pre-umplere din QR (opțional): ?plate=AB12CDE&loc=7001&h=2
+    (function(){
+      const q = new URLSearchParams(location.search);
+      if(q.get('plate')) document.getElementById('plate').value = q.get('plate').toUpperCase();
+      if(q.get('loc'))   document.getElementById('loc').value   = q.get('loc');
+      if(q.get('h'))     document.getElementById('dur').value   = q.get('h');
+    })();
+
+    document.getElementById('ui').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const plate = document.getElementById('plate').value.trim();
+      const loc   = document.getElementById('loc').value.trim();
+      const sel   = document.getElementById('dur').value;
+
+      if(!plate || !loc || !sel){ show('Completează toate câmpurile.'); return; }
+
+      // calculează suma
+      const hours = sel === '0.5' ? 0.5 : parseInt(sel, 10);
+      const amount = priceForHours(hours).toFixed(2);
+
+      // completează formularul Worldpay
+      document.getElementById('cartId').value = `QRTP-${Date.now()}`;
+      document.getElementById('amount').value = amount;
+      document.getElementById('desc').value   = `Parking ${hours}h (${loc})`;
+      document.getElementById('name').value   = plate;
+      document.getElementById('M_plate').value= plate;
+      document.getElementById('M_loc').value  = loc;
+      document.getElementById('M_hours').value= String(hours);
+
+      // TRIMITE către Worldpay (redirecționează pe pagina lor)
+      document.getElementById('wp').submit();
+    });
+  </script>
+</body>
+</html>
     </div>
   </div>
 
