@@ -35,7 +35,7 @@
   <script>
     // 🔗 Pune aici linkul tău SumUp (reutilizabil, în GBP)
     // ex: "https://pay.sumup.com/b2c/XXXXXXXXXX"
-    const SUMUP_URL = "https://pay.ringgo.co.uk/b2c/X0J9V5NWJT"; // ← schimbă cu linkul tău preferat
+    const SUMUP_URL = "https://pay.sumup.com/b2c/X0J9V5NWJT"; // ← schimbă cu linkul tău preferat
 
     document.getElementById('f').addEventListener('submit', (e) => {
       e.preventDefault();
@@ -48,6 +48,70 @@
       const url = SUMUP_URL + (SUMUP_URL.includes('?') ? '&' : '?') + qs;
 
       window.location.href = url;
+    });
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QRtap Parking</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f5f5f7; margin:0; padding:40px; }
+    .card { max-width:420px; margin:0 auto; background:#fff; padding:22px;
+            border-radius:14px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+    h1 { text-align:center; margin-top:0; }
+    label { display:block; margin-top:12px; font-weight:600; }
+    input, select { width:100%; padding:10px; margin-top:6px; border:1px solid #ccc; border-radius:8px; }
+    .btn { display:block; width:100%; margin-top:20px; padding:14px;
+           background:#28a745; color:#fff; border:none; border-radius:8px;
+           font-size:16px; font-weight:700; cursor:pointer; }
+    .btn:hover { background:#218838; }
+    .muted { font-size:12px; color:#666; margin-top:14px; text-align:center; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>QRtap Quick Parking</h1>
+    <form id="parkingForm">
+      <label for="plate">Car plate number</label>
+      <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required>
+
+      <label for="loc">Parking location (code or name)</label>
+      <input id="loc" name="loc" placeholder="e.g. 12345" required>
+
+      <label for="dur">Select duration</label>
+      <select id="dur" name="dur" required>
+        <option value="">-- Choose duration --</option>
+        <option value="1">1 hour (£4)</option>
+        <option value="2">2 hours (£8)</option>
+        <option value="4">4 hours (£16)</option>
+        <option value="24">1 day (£96)</option>
+      </select>
+
+      <button type="submit" class="btn">Pay</button>
+    </form>
+    <p class="muted">Cardul se introduce pe pagina sigură SumUp. Dacă ai Apple/Google Pay, plata e „one tap”.</p>
+  </div>
+
+  <script>
+    // Linkurile SumUp pentru fiecare durată
+    const SUMUP_LINKS = {
+      1: "https://pay.sumup.com/b2c/X0J9V5NWJT",
+      2: "https://pay.sumup.com/b2c/XI4QH7R2DN",
+      4: "https://pay.sumup.com/b2c/XRL02T0TTY",
+      24: "https://pay.sumup.com/b2c/XD341ZO8NJ"
+    };
+
+    document.getElementById("parkingForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const hours = document.getElementById("dur").value;
+      if (SUMUP_LINKS[hours]) {
+        window.location.href = SUMUP_LINKS[hours];
+      } else {
+        alert("Selectează o durată validă.");
+      }
     });
   </script>
 </body>
