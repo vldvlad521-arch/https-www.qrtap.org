@@ -62,8 +62,54 @@
       if (SUMUP_LINKS[hours]) {
         window.location.href = SUMUP_LINKS[hours];
       } else {
-        alert("Selectează o durată validă.");
-      }
+        <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QRtap Parking</title>
+  <style>
+    body{font-family:Arial, sans-serif;background:#f5f5f7;margin:0;padding:40px}
+    .card{max-width:420px;margin:0 auto;background:#fff;padding:22px;border-radius:14px;box-shadow:0 4px 10px rgba(0,0,0,.1)}
+    h1{text-align:center;margin:0 0 10px}
+    label{display:block;margin-top:12px;font-weight:600}
+    input{width:100%;padding:12px;margin-top:6px;border:1px solid #ccc;border-radius:10px}
+    .btn{width:100%;margin-top:18px;padding:14px;background:#0070ba;color:#fff;border:none;border-radius:10px;font-weight:800;cursor:pointer}
+    .btn:hover{background:#045a92}
+    .muted{font-size:12px;color:#666;margin-top:12px;text-align:center}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>QRtap Quick Parking</h1>
+
+    <form id="f">
+      <label for="plate">Car plate number</label>
+      <input id="plate" placeholder="e.g. AB12 CDE" required />
+
+      <label for="loc">Parking location (code or name)</label>
+      <input id="loc" placeholder="e.g. 12345" required />
+
+      <button type="submit" class="btn">Pay</button>
+    </form>
+
+    <p class="muted">Plata se face pe pagina sigură PayPal.</p>
+  </div>
+
+  <script>
+    // 🔗 Înlocuiește cu linkul tău PayPal.Me (ex: https://paypal.me/NumeleTau/4GBP)
+    const PAYPAL_ME_LINK = "https://paypal.me/NumeleTau/4GBP";
+
+    document.getElementById('f').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const plate = document.getElementById('plate').value.trim();
+      const loc   = document.getElementById('loc').value.trim();
+      if(!plate || !loc){ alert('Completează câmpurile.'); return; }
+
+      // Deschide PayPal.Me într-un nou tab
+      window.location.href = PAYPAL_ME_LINK;
+      // (opțional) afișează un mesaj pe pagină că la „Add a note” să scrie plăcuța + locația
+      // dar e simplu: clientul plătește și poate scrie nota în PayPal.
     });
   </script>
 </body>
