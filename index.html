@@ -12,16 +12,14 @@
     input, select { width:100%; padding:12px; border:1px solid #d5d9e0; border-radius:10px; margin-bottom:12px; }
     button, .btn-link { width:100%; padding:12px; background:#28a745; color:#fff; border:none; border-radius:10px; font-weight:800; cursor:pointer; text-align:center; display:inline-block; text-decoration:none; }
     button:hover, .btn-link:hover { background:#218838; }
-    .muted { color:#6b7280; font-size:13px; text-align:center; margin-top:6px; }
-    .divider { margin:16px 0; text-align:center; color:#6b7280; font-size:12px; }
-    .grid { display:grid; gap:8px; grid-template-columns:1fr 1fr; }
+    .note { font-size:13px; color:#6b7280; margin:10px 0; text-align:center; }
+    .grid { display:grid; gap:8px; grid-template-columns:1fr 1fr; margin-top:12px; }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>QRtap Quick Parking</h1>
 
-    <!-- Mod 1: Select + Pay (JS) -->
     <form id="f">
       <label for="plate">Car plate number</label>
       <input id="plate" placeholder="e.g. AB12 CDE" autocomplete="off" required>
@@ -41,9 +39,8 @@
       <button type="submit">Pay</button>
     </form>
 
-    <div class="divider">— or —</div>
+    <p class="note">💡 For fastest checkout, use <b>Apple Pay</b> or <b>Google Pay</b> when available.</p>
 
-    <!-- Mod 2: Fallback 100% (fără JS) -->
     <div class="grid">
       <a class="btn-link" href="https://pay.sumup.com/b2c/X0J9V5NWJT" rel="noopener">Pay 1h</a>
       <a class="btn-link" href="https://pay.sumup.com/b2c/XI4QH7R2DN" rel="noopener">Pay 2h</a>
@@ -51,11 +48,10 @@
       <a class="btn-link" href="https://pay.sumup.com/b2c/XD341ZO8NJ" rel="noopener">Pay 1 day</a>
     </div>
 
-    <p class="muted">Card details are entered on SumUp’s secure page.</p>
+    <a class="btn-link" href="https://www.myringgo.co.uk" target="_blank" style="margin-top:12px; background:#1d4ed8;">Open RingGo</a>
   </div>
 
   <script>
-    // 4 linkuri SumUp
     const SUMUP_LINKS = {
       "1": "https://pay.sumup.com/b2c/X0J9V5NWJT",
       "2": "https://pay.sumup.com/b2c/XI4QH7R2DN",
@@ -69,13 +65,10 @@
       const url = SUMUP_LINKS[hours];
       if (!url) { alert("Select a duration."); return; }
 
-      // (opțional) atașează info pt. tracking
       const plate = document.getElementById("plate").value.trim();
       const loc   = document.getElementById("loc").value.trim();
       const qs = new URLSearchParams({ plate, loc, h:hours }).toString();
-      const finalUrl = url + (url.includes("?") ? "&" : "?") + qs;
-
-      window.location.href = finalUrl;
+      window.location.href = url + "?" + qs;
     });
   </script>
 </body>
