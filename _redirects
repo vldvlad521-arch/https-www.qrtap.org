@@ -1,1 +1,28 @@
-/    https://myringgo.co.uk/park    301!
+<form id="f">
+  <label>Car plate number</label>
+  <input id="plate" required>
+
+  <label>Parking location</label>
+  <input id="loc" required>
+
+  <label>Hours</label>
+  <input id="dur" required>
+
+  <button type="button" onclick="payRingGo()">Pay with RingGo</button>
+  <button type="button" onclick="paySumUp()">Pay with Card</button>
+</form>
+
+<script>
+function payRingGo() {
+  window.location.href = "https://myringgo.co.uk/park";
+}
+
+function paySumUp() {
+  const url = "https://pay.sumup.com/b2c/EXEMPLU"; // linkul tău SumUp
+  const plate = document.getElementById("plate").value.trim();
+  const loc   = document.getElementById("loc").value.trim();
+  const dur   = document.getElementById("dur").value.trim();
+  const qs = new URLSearchParams({ plate, loc, dur }).toString();
+  window.location.href = url + "?" + qs;
+}
+</script>
