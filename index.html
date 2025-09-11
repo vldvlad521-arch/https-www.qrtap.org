@@ -1,107 +1,112 @@
-pk_live_51PUQ1zLZuOE9n3gup39xBLrYw7FWlTxWqy2l2H6GXivzDCGPXYogNXy3yyb0ho5oq4WsqmX2h3KQ0u8Y4vguxhMS00ZKAEa8l1!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>RingGo</title>
-<style>
-  :root{
-    --brand:#f5007a; --ok:#16a34a; --err:#dc2626;
-    --line:#e5e7eb; --bg:#f6f7fb; --card:#fff;
-  }
-  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:#111}
-  .wrap{max-width:480px;margin:32px auto;padding:0 16px}
-  h1{color:var(--brand);margin:0 0 12px;font-size:36px}
-  .card{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 6px 20px rgba(0,0,0,.08)}
-  .field{margin:12px 0;display:flex;flex-direction:column;gap:6px}
-  label{font-weight:600;font-size:14px}
-  input{padding:14px;border:1px solid var(--line);border-radius:10px;font-size:16px}
-  input:focus{outline:none;border-color:#d1d5db;box-shadow:0 0 0 3px rgba(245,0,122,.1)}
-  .btn{margin-top:14px;width:100%;padding:14px;border:0;border-radius:12px;background:linear-gradient(90deg,#ff2f9e,var(--brand));color:#fff;font-weight:600;cursor:pointer;font-size:16px}
-  .msg{margin-top:14px;padding:12px;border-radius:10px;font-weight:600}
-  .ok{background:#e6f9ee;color:#065f46}
-  .err{background:#fdecec;color:#7f1d1d}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RingGo Payment</title>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background:#f6f7fb;
+      margin:0;
+      padding:0;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+    }
+    .panel {
+      background:#fff;
+      border-radius:16px;
+      padding:28px;
+      box-shadow:0 8px 25px rgba(0,0,0,.1);
+      width:100%;
+      max-width:400px;
+    }
+    h1 {
+      text-align:center;
+      font-size:36px;
+      font-weight:900;
+      color:#f5007a;
+      margin:0 0 20px;
+      text-transform:uppercase;
+      letter-spacing:1px;
+    }
+    label {
+      display:block;
+      font-weight:bold;
+      margin-top:12px;
+      margin-bottom:4px;
+    }
+    input {
+      width:100%;
+      padding:12px;
+      border:1px solid #ccc;
+      border-radius:8px;
+      font-size:16px;
+    }
+    #card-element {
+      padding:12px;
+      border:1px solid #ccc;
+      border-radius:8px;
+      margin-top:6px;
+    }
+    button {
+      margin-top:20px;
+      width:100%;
+      padding:14px;
+      background:linear-gradient(90deg,#ff2f9e,#f5007a);
+      color:#fff;
+      border:none;
+      border-radius:12px;
+      font-size:18px;
+      font-weight:bold;
+      cursor:pointer;
+    }
+    button:hover {
+      opacity:0.9;
+    }
+    #msg {
+      margin-top:14px;
+      text-align:center;
+      font-weight:bold;
+    }
+  </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="panel">
     <h1>RingGo</h1>
-    <div class="card">
-      <form id="payForm">
-        <div class="field">
-          <label for="loc">Location number</label>
-          <input id="loc" required placeholder="e.g. L1 / 101" />
-        </div>
-        <div class="field">
-          <label for="car">Car plate</label>
-          <input id="car" required placeholder="ABC-123" />
-        </div>
-        <div class="field">
-          <label for="time">Time (hh:mm)</label>
-          <input id="time" required placeholder="1:30" pattern="^([0-9]{1,2}):([0-5][0-9])$" />
-        </div>
-        <div class="field">
-          <label for="card">Card number</label>
-          <input id="card" inputmode="numeric" maxlength="19" required placeholder="#### #### #### ####" />
-        </div>
-        <div style="display:flex;gap:12px">
-          <div class="field" style="flex:1">
-            <label for="exp">Exp</label>
-            <input id="exp" required placeholder="MM/YY" />
-          </div>
-          <div class="field" style="flex:1">
-            <label for="cvv">CVV</label>
-            <input id="cvv" inputmode="numeric" maxlength="4" required placeholder="***" />
-          </div>
-        </div>
-        <button class="btn" type="submit">Pay</button>
-      </form>
-      <div id="banner"></div>
-    </div>
+    <form id="payForm">
+      <label for="loc">Location number</label>
+      <input id="loc" required placeholder="e.g. L1 / 101" />
+
+      <label for="car">Car plate</label>
+      <input id="car" required placeholder="ABC-123" />
+
+      <label for="time">Time (hh:mm)</label>
+      <input id="time" required placeholder="1:30" />
+
+      <label>Card details</label>
+      <div id="card-element"></div>
+
+      <button type="submit">Pay</button>
+    </form>
+    <div id="msg"></div>
   </div>
 
-<script>
-(function(){
-  const $ = s => document.querySelector(s);
-  const fmtCard = v => v.replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim();
-  const ref = () => 'REF-' + Math.random().toString(36).slice(2,8).toUpperCase();
+  <script>
+    // 👉 aici bagi cheia PUBLICĂ (pk_...)
+    const stripe = Stripe("pk_test_CHEIA_TA_PUBLICA");
 
-  // masks
-  $('#card').addEventListener('input', e=> e.target.value = fmtCard(e.target.value));
-  $('#exp').addEventListener('input', e=>{
-    let v = e.target.value.replace(/\D/g,'').slice(0,4);
-    if(v.length>2) v = v.slice(0,2)+'/'+v.slice(2);
-    e.target.value = v;
-  });
+    const elements = stripe.elements();
+    const card = elements.create("card");
+    card.mount("#card-element");
 
-  $('#payForm').addEventListener('submit', e=>{
-    e.preventDefault();
-    const loc  = $('#loc').value.trim();
-    const car  = $('#car').value.trim();
-    const time = $('#time').value.trim();
-    const card = $('#card').value.trim();
-    const exp  = $('#exp').value.trim();
-    const cvv  = $('#cvv').value.trim();
-    const banner = $('#banner');
-
-    // validate time hh:mm
-    const m = time.match(/^([0-9]{1,2}):([0-5][0-9])$/);
-    if(!m){ banner.innerHTML='<div class="msg err">❌ Invalid time format (use hh:mm)</div>'; return; }
-
-    if(!loc||!car||!card||!exp||!cvv){
-      banner.innerHTML='<div class="msg err">❌ Fill all required fields</div>'; return;
-    }
-
-    // simulate payment
-    const ok = Math.random()<0.9;
-    const r = ref();
-    banner.innerHTML = ok
-      ? `<div class="msg ok">✅ Payment successful · Ref: ${r}</div>`
-      : `<div class="msg err">❌ Payment not processed · Ref: ${r}</div>`;
-
-    e.target.reset();
-  });
-})();
-</script>
+    document.getElementById("payForm").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      document.getElementById("msg").textContent = "⚠️ Ai nevoie și de backend (server) pentru plată reală!";
+    });
+  </script>
 </body>
 </html>
