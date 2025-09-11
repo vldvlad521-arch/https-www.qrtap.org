@@ -1,74 +1,62 @@
 <!doctype html>
-<html lang="ro">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Park Quick</title>
+<title>RingGo</title>
 <style>
   :root{--pink:#f5007a;}
   body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;margin:0;background:#f6f7fb;color:#111}
   .wrap{max-width:780px;margin:24px auto;padding:0 16px}
-  h1{color:var(--pink);margin:8px 0 4px;font-size:40px}
+  h1{color:var(--pink);margin:8px 0 4px;font-size:36px}
   .muted{color:#505257}
   .card{background:#fff;border-radius:18px;padding:18px;box-shadow:0 12px 30px rgba(0,0,0,.06);margin:18px 0}
   .field{display:flex;flex-direction:column;gap:8px;margin:10px 0}
   .field label{font-weight:600}
-  .field input,.field select{padding:14px 12px;border:1px solid #dcdde4;border-radius:12px;font-size:16px;background:#fff}
-  .grid{display:grid;gap:12px}
-  @media(min-width:680px){.grid-2{grid-template-columns:1fr 1fr}}
+  .field input{padding:14px 12px;border:1px solid #dcdde4;border-radius:12px;font-size:16px;background:#fff}
+  .btn{border:0;border-radius:12px;padding:14px 18px;background:linear-gradient(90deg,#ff2f9e,var(--pink));color:#fff;font-size:16px;cursor:pointer}
   table{width:100%;border-collapse:collapse;font-size:14px}
   th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;white-space:nowrap}
-  .tag{display:inline-block;padding:2px 8px;border-radius:999px;background:#f0f1f6;font-size:12px}
-  .btn{border:0;border-radius:12px;padding:12px 16px;background:linear-gradient(90deg,#ff2f9e,var(--pink));color:#fff;cursor:pointer}
 </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <h1>Park Quick</h1>
-      <p class="muted">Datele se salvează local (LocalStorage). Pentru plăți reale ai nevoie de un procesator (Stripe/PayU/etc.).</p>
+      <h1>RingGo</h1>
+      <p class="muted">Demo only – payments are simulated and saved locally.</p>
     </header>
 
     <section class="card">
-      <h2 style="margin:0 0 8px;">Adaugă plată</h2>
+      <h2 style="margin:0 0 8px;">Add payment</h2>
       <form id="payForm" autocomplete="off">
         <div class="field">
-          <label for="loc">Nr locație <span class="tag">preferențial</span></label>
-          <input id="loc" name="loc" type="text" placeholder="ex. L1 / 101" />
+          <label for="loc">Location number (optional)</label>
+          <input id="loc" name="loc" type="text" placeholder="e.g. L1 / 101" />
         </div>
 
         <div class="field">
-          <label for="car">Nr car</label>
-          <input id="car" name="car" type="text" placeholder="B-99-ABC" required />
-        </div>
-
-        <div class="grid grid-2">
-          <div class="field">
-            <label for="timeValue">Timp</label>
-            <input id="timeValue" name="timeValue" type="number" min="1" step="1" placeholder="Durată" required />
-          </div>
-          <div class="field">
-            <label>&nbsp;</label>
-            <select id="timeUnit" name="timeUnit" required>
-              <option value="minute">minute</option>
-              <option value="ore">ore</option>
-            </select>
-          </div>
+          <label for="car">Car plate</label>
+          <input id="car" name="car" type="text" placeholder="ABC-123" required />
         </div>
 
         <div class="field">
-          <label for="card">Nr card</label>
-          <input id="card" name="card" inputmode="numeric" pattern="[0-9 ]{12,23}" maxlength="19" placeholder="#### #### #### ####" required />
+          <label for="time">Time (hh:mm)</label>
+          <input id="time" name="time" type="text" placeholder="2:20" pattern="^([0-9]{1,2}):([0-5][0-9])$" required />
         </div>
 
-        <div class="grid grid-2">
-          <div class="field">
+        <div class="field">
+          <label for="card">Card number</label>
+          <input id="card" name="card" inputmode="numeric" maxlength="19" placeholder="#### #### #### ####" required />
+        </div>
+
+        <div style="display:flex;gap:12px">
+          <div class="field" style="flex:1">
             <label for="exp">Exp</label>
-            <input id="exp" name="exp" inputmode="numeric" placeholder="MM/YY" pattern="^(0[1-9]|1[0-2])\/\d{2}$" required />
+            <input id="exp" name="exp" inputmode="numeric" placeholder="MM/YY" required />
           </div>
-          <div class="field">
+          <div class="field" style="flex:1">
             <label for="cvv">CVV</label>
-            <input id="cvv" name="cvv" inputmode="numeric" pattern="^\d{3,4}$" maxlength="4" placeholder="***" required />
+            <input id="cvv" name="cvv" inputmode="numeric" maxlength="4" placeholder="***" required />
           </div>
         </div>
 
@@ -79,19 +67,19 @@
     </section>
 
     <section class="card">
-      <h3 style="margin:0 0 12px;">Plăți salvate local</h3>
+      <h3 style="margin:0 0 12px;">Saved payments</h3>
       <div style="overflow:auto">
         <table id="table">
           <thead>
             <tr>
-              <th>Data</th>
-              <th>Nr locație</th>
-              <th>Nr car</th>
-              <th>Timp</th>
-              <th>Ultimele 4 cifre</th>
+              <th>Date</th>
+              <th>Location</th>
+              <th>Car</th>
+              <th>Time</th>
+              <th>Card last 4</th>
             </tr>
           </thead>
-          <tbody id="tbody"><tr><td colspan="5" class="muted">Nu există înregistrări.</td></tr></tbody>
+          <tbody id="tbody"><tr><td colspan="5" class="muted">No records yet.</td></tr></tbody>
         </table>
       </div>
     </section>
@@ -99,14 +87,12 @@
 
 <script>
 (function(){
-  const KEY = "park_quick_payments_v2";
+  const KEY = "park_quick_payments_v3";
   const $ = s => document.querySelector(s);
 
   const formatCard = v => v.replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim();
-  const last4 = v => v.replace(/\D/g,'').slice(-4);
-
-  // input masks
   $('#card').addEventListener('input', e => e.target.value = formatCard(e.target.value));
+
   $('#exp').addEventListener('input', e => {
     let v = e.target.value.replace(/\D/g,'').slice(0,4);
     if(v.length>2) v = v.slice(0,2) + '/' + v.slice(2);
@@ -121,7 +107,7 @@
     const tbody = $('#tbody');
     tbody.innerHTML = '';
     if(!data.length){
-      tbody.innerHTML = '<tr><td colspan="5" class="muted">Nu există înregistrări.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="muted">No records yet.</td></tr>';
       return;
     }
     data.forEach(r=>{
@@ -130,30 +116,36 @@
         <td>${new Date(r.createdAt).toLocaleString()}</td>
         <td>${r.loc || '-'}</td>
         <td>${r.car}</td>
-        <td>${r.timeValue} ${r.timeUnit}</td>
+        <td>${r.timeStr} (${r.totalMinutes} min)</td>
         <td>${r.cardLast4}</td>`;
       tbody.appendChild(tr);
     });
   }
 
+  function last4(v){ return v.replace(/\D/g,'').slice(-4); }
+
   $('#payForm').addEventListener('submit', e=>{
     e.preventDefault();
-
     const loc = $('#loc').value.trim();
     const car = $('#car').value.trim();
-    const timeValue = parseInt($('#timeValue').value,10);
-    const timeUnit = $('#timeUnit').value;
+    const timeStr = $('#time').value.trim();
+    const match = timeStr.match(/^([0-9]{1,2}):([0-5][0-9])$/);
+    if(!match){ alert("Invalid time format (use hh:mm)."); return; }
+    const hours = parseInt(match[1],10);
+    const minutes = parseInt(match[2],10);
+    const totalMinutes = hours*60 + minutes;
+
     const card = $('#card').value.trim();
     const exp = $('#exp').value.trim();
     const cvv = $('#cvv').value.trim();
 
-    if(!car || !timeValue || !card || !exp || !cvv){
-      alert('Completează câmpurile obligatorii.');
+    if(!car || !timeStr || !card || !exp || !cvv){
+      alert('Please complete all required fields.');
       return;
     }
 
     const record = {
-      loc, car, timeValue, timeUnit,
+      loc, car, timeStr, totalMinutes,
       cardLast4: last4(card),
       createdAt: Date.now()
     };
@@ -164,7 +156,7 @@
     render();
 
     e.target.reset();
-    alert('Plata a fost SIMULATĂ și salvată local.');
+    alert('✅ Payment successful! Ref: ' + Math.floor(100000 + Math.random()*900000));
   });
 
   render();
