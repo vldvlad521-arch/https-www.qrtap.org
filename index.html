@@ -3,110 +3,55 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RingGo Payment</title>
-  <script src="https://js.stripe.com/v3/"></script>
+  <title>Secure Payment</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background:#f6f7fb;
-      margin:0;
-      padding:0;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      height:100vh;
+      font-family: system-ui, Arial, sans-serif;
+      background: #f6f7fb;
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
     }
-    .panel {
-      background:#fff;
-      border-radius:16px;
-      padding:28px;
-      box-shadow:0 8px 25px rgba(0,0,0,.1);
-      width:100%;
-      max-width:400px;
+    .card {
+      background: #fff;
+      padding: 28px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,.08);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
     }
     h1 {
-      text-align:center;
-      font-size:36px;
-      font-weight:900;
-      color:#f5007a;
-      margin:0 0 20px;
-      text-transform:uppercase;
-      letter-spacing:1px;
+      margin: 0 0 16px;
+      font-size: 24px;
     }
-    label {
-      display:block;
-      font-weight:bold;
-      margin-top:12px;
-      margin-bottom:4px;
-    }
-    input {
-      width:100%;
-      padding:12px;
-      border:1px solid #ccc;
-      border-radius:8px;
-      font-size:16px;
-    }
-    #card-element {
-      padding:12px;
-      border:1px solid #ccc;
-      border-radius:8px;
-      margin-top:6px;
+    p {
+      margin: 0 0 20px;
+      color: #444;
     }
     button {
-      margin-top:20px;
-      width:100%;
-      padding:14px;
-      background:linear-gradient(90deg,#ff2f9e,#f5007a);
-      color:#fff;
-      border:none;
-      border-radius:12px;
-      font-size:18px;
-      font-weight:bold;
-      cursor:pointer;
+      margin-top: 20px;
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(90deg,#ff2f9e,#f5007a);
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
     }
-    button:hover {
-      opacity:0.9;
-    }
-    #msg {
-      margin-top:14px;
-      text-align:center;
-      font-weight:bold;
-    }
+    button:hover { opacity: .9; }
   </style>
 </head>
 <body>
-  <div class="panel">
-    <h1>RingGo</h1>
-    <form id="payForm">
-      <label for="loc">Location number</label>
-      <input id="loc" required placeholder="e.g. L1 / 101" />
-
-      <label for="car">Car plate</label>
-      <input id="car" required placeholder="ABC-123" />
-
-      <label for="time">Time (hh:mm)</label>
-      <input id="time" required placeholder="1:30" />
-
-      <label>Card details</label>
-      <div id="card-element"></div>
-
-      <button type="submit">Pay</button>
-    </form>
-    <div id="msg"></div>
+  <div class="card">
+    <h1>Secure Payment</h1>
+    <p>Click the button below to continue to Stripe Checkout.</p>
+    <button onclick="window.location.href='https://buy.stripe.com/XXXXXXXX'">
+      Pay Now
+    </button>
   </div>
-
-  <script>
-    // 👉 aici bagi cheia PUBLICĂ (pk_...)
-    const stripe = Stripe("pk_test_CHEIA_TA_PUBLICA");
-
-    const elements = stripe.elements();
-    const card = elements.create("card");
-    card.mount("#card-element");
-
-    document.getElementById("payForm").addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      document.getElementById("msg").textContent = "⚠️ Ai nevoie și de backend (server) pentru plată reală!";
-    });
-  </script>
 </body>
 </html>
