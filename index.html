@@ -1,65 +1,211 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="ro">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RINGGO</title>
-  <style>
-    body { font-family: Arial, sans-serif; background:#f5f5f7; margin:0; padding:40px; }
-    .card { max-width:420px; margin:0 auto; background:#fff; padding:22px;
-            border-radius:14px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
-    h1 { text-align:center; margin-top:0; }
-    label { display:block; margin-top:12px; font-weight:600; }
-    input, select { width:100%; padding:10px; margin-top:6px; border:1px solid #ccc; border-radius:8px; }
-    .btn { display:block; width:100%; margin-top:20px; padding:14px;
-           background:#28a745; color:#fff; border:none; border-radius:8px;
-           font-size:16px; font-weight:700; cursor:pointer; }
-    .btn:hover { background:#218838; }
-    .muted { font-size:12px; color:#666; margin-top:14px; text-align:center; }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Panel Plăți Parcări</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="card">
-    <h1>QRtap Quick Parking</h1>
-    <form id="parkingForm">
-      <label for="plate">Car plate number</label>
-      <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required>
+<body class="bg-slate-50 min-h-screen">
+  <div class="max-w-6xl mx-auto p-4 sm:p-6">
+    <header class="flex flex-col sm:flex-row sm:items-end gap-3 sm:justify-between mb-6">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Panel Plăți Parcări</h1>
+        <p class="text-slate-600">Datele se salvează în browser (LocalStorage). Pentru backup folosește Export CSV.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btnExport" class="px-3 py-2 rounded-xl shadow bg-white border hover:bg-slate-50">Export CSV</button>
+        <button id="btnClearAll" class="px-3 py-2 rounded-xl shadow bg-white border hover:bg-slate-50">Șterge toate</button>
+      </div>
+    </header>
 
-      <label for="loc">Parking location (code or name)</label>
-      <input id="loc" name="loc" placeholder="e.g. 12345" required>
+    <!-- Formular -->
+    <section class="bg-white rounded-2xl shadow p-4 sm:p-6 mb-6">
+      <h2 class="text-lg font-semibold mb-3">Adaugă plată</h2>
+      <form id="payForm" class="grid sm:grid-cols-6 gap-3">
+        <input class="col-span-2 px-3 py-2 border rounded-xl" id="ticket" placeholder="Nr. tichet" required />
+        <input class="col-span-2 px-3 py-2 border rounded-xl" id="vehicle" placeholder="Nr. înmatriculare" required />
+        <select class="col-span-2 px-3 py-2 border rounded-xl" id="method" required>
+          <option value="">Metodă plată</option>
+          <option>QR</option>
+          <option>Card</option>
+          <option>Cash</option>
+          <option>UPI</option>
+          <option>Wallet</option>
+        </select>
+        <input class="col-span-2 px-3 py-2 border rounded-xl" id="amount" type="number" min="0" step="0.01" placeholder="Sumă" required />
+        <select class="col-span-2 px-3 py-2 border rounded-xl" id="paid" required>
+          <option value="">Plătit?</option>
+          <option value="Y">Y</option>
+          <option value="N">N</option>
+        </select>
+        <input class="col-span-2 px-3 py-2 border rounded-xl" id="date" type="date" />
+        <button class="col-span-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700">Adaugă</button>
+      </form>
+    </section>
 
-      <label for="dur">Select duration</label>
-      <select id="dur" name="dur" required>
-        <option value="">-- Choose duration --</option>
-        <option value="1">1 hour (£2.60)</option>
-        <option value="2">2 hours (£5.68)</option>
-        <option value="4">4 hours (£11.32)</option>
-        <option value="24">1 day (£37.06)</option>
-      </select>
+    <!-- Filtre + Totaluri -->
+    <section class="bg-white rounded-2xl shadow p-4 sm:p-6 mb-6">
+      <div class="grid sm:grid-cols-4 gap-3 items-end">
+        <div>
+          <label class="block text-sm text-slate-600 mb-1">De la</label>
+          <input id="fromDate" type="date" class="w-full px-3 py-2 border rounded-xl" />
+        </div>
+        <div>
+          <label class="block text-sm text-slate-600 mb-1">Până la</label>
+          <input id="toDate" type="date" class="w-full px-3 py-2 border rounded-xl" />
+        </div>
+        <div>
+          <label class="block text-sm text-slate-600 mb-1">Căutare</label>
+          <input id="search" placeholder="tichet / număr / metodă" class="w-full px-3 py-2 border rounded-xl" />
+        </div>
+        <div class="flex gap-2">
+          <button id="btnResetFilters" class="mt-6 px-3 py-2 rounded-xl shadow bg-white border hover:bg-slate-50 w-full">Reset</button>
+        </div>
+      </div>
 
-      <button type="submit" class="btn">Pay</button>
-    </form>
-    <p class="muted">Cardul se introduce pe pagina sigură SumUp. Dacă ai Apple/Google Pay, plata e „one tap”.</p>
+      <div class="grid sm:grid-cols-3 gap-3 mt-4">
+        <div class="p-4 rounded-2xl bg-slate-100">
+          <div class="text-sm text-slate-600">Total azi (Plătit = Y)</div>
+          <div id="todayTotal" class="text-2xl font-semibold">0.00</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-slate-100">
+          <div class="text-sm text-slate-600">Total filtrat (Plătit = Y)</div>
+          <div id="filteredTotal" class="text-2xl font-semibold">0.00</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-slate-100">
+          <div class="text-sm text-slate-600">Total general (Plătit = Y)</div>
+          <div id="grandTotal" class="text-2xl font-semibold">0.00</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabel -->
+    <section class="bg-white rounded-2xl shadow overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-slate-100 text-left text-sm">
+            <tr>
+              <th class="py-3 px-4">Tichet</th>
+              <th class="py-3 px-4">Nr. auto</th>
+              <th class="py-3 px-4">Metodă</th>
+              <th class="py-3 px-4">Sumă</th>
+              <th class="py-3 px-4">Plătit</th>
+              <th class="py-3 px-4">Data</th>
+              <th class="py-3 px-4">—</th>
+            </tr>
+          </thead>
+          <tbody id="rows" class="text-sm"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="text-center text-slate-500 text-xs mt-6">Datele sunt stocate doar în acest browser. Pentru backup folosește Export CSV.</footer>
   </div>
 
-  <script>
-    // Linkurile SumUp pentru fiecare durată
-    const SUMUP_LINKS = {
-      1: "https://pay.sumup.com/b2c/XSKNRHDU69",
-      2: "https://pay.sumup.com/b2c/XI4QH7R2DN",
-      4: "https://pay.sumup.com/b2c/XRL02T0TTY",
-      24: "https://pay.sumup.com/b2c/XD341ZO8NJ"
-    };
+<script>
+  const KEY = 'parking.payments.v1';
+  const fmt = n => (Number(n||0)).toFixed(2);
+  const todayISO = () => new Date().toISOString().slice(0,10);
 
-    document.getElementById("parkingForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const hours = document.getElementById("dur").value;
-      if (SUMUP_LINKS[hours]) {
-        window.location.href = SUMUP_LINKS[hours];
-      } else {
-        alert("Selectează o durată validă.");
+  const load = () => JSON.parse(localStorage.getItem(KEY)||'[]');
+  const save = rows => localStorage.setItem(KEY, JSON.stringify(rows));
+
+  const form = document.getElementById('payForm');
+  const rowsEl = document.getElementById('rows');
+  const todayTotalEl = document.getElementById('todayTotal');
+  const filteredTotalEl = document.getElementById('filteredTotal');
+  const grandTotalEl = document.getElementById('grandTotal');
+  const fromDateEl = document.getElementById('fromDate');
+  const toDateEl = document.getElementById('toDate');
+  const searchEl = document.getElementById('search');
+
+  document.getElementById('date').value = todayISO();
+
+  function render(){
+    let rows = load();
+    const q = searchEl.value.toLowerCase();
+    const from = fromDateEl.value;
+    const to = toDateEl.value;
+    const today = todayISO();
+
+    let html = '';
+    let totalToday = 0, totalFiltered = 0, grandTotal = 0;
+
+    rows.forEach((r,i)=>{
+      if(r.paid==='Y'){ grandTotal += Number(r.amount||0); }
+      let match = true;
+      if(q && !(r.ticket.toLowerCase().includes(q)||r.vehicle.toLowerCase().includes(q)||r.method.toLowerCase().includes(q))){ match=false; }
+      if(from && r.date<from) match=false;
+      if(to && r.date>to) match=false;
+      if(match && r.paid==='Y'){ totalFiltered += Number(r.amount||0); }
+      if(r.date===today && r.paid==='Y'){ totalToday += Number(r.amount||0); }
+      if(match){
+        html += `<tr class=\"border-b\">
+          <td class=\"px-4 py-2\">${r.ticket}</td>
+          <td class=\"px-4 py-2\">${r.vehicle}</td>
+          <td class=\"px-4 py-2\">${r.method}</td>
+          <td class=\"px-4 py-2\">${fmt(r.amount)}</td>
+          <td class=\"px-4 py-2\">${r.paid}</td>
+          <td class=\"px-4 py-2\">${r.date}</td>
+          <td class=\"px-4 py-2 text-right\"><button onclick=\"delRow(${i})\" class=\"text-red-500 hover:underline\">șterge</button></td>
+        </tr>`;
       }
     });
-  </script>
+    rowsEl.innerHTML = html||'<tr><td class=\"px-4 py-2\" colspan=\"7\">Nici o înregistrare</td></tr>';
+    todayTotalEl.textContent = fmt(totalToday);
+    filteredTotalEl.textContent = fmt(totalFiltered);
+    grandTotalEl.textContent = fmt(grandTotal);
+  }
+
+  function delRow(i){
+    let rows = load();
+    rows.splice(i,1);
+    save(rows);
+    render();
+  }
+
+  form.addEventListener('submit', e=>{
+    e.preventDefault();
+    const row = {
+      ticket: document.getElementById('ticket').value,
+      vehicle: document.getElementById('vehicle').value,
+      method: document.getElementById('method').value,
+      amount: document.getElementById('amount').value,
+      paid: document.getElementById('paid').value,
+      date: document.getElementById('date').value||todayISO()
+    };
+    let rows = load();
+    rows.push(row);
+    save(rows);
+    form.reset();
+    document.getElementById('date').value = todayISO();
+    render();
+  });
+
+  document.getElementById('btnExport').onclick = ()=>{
+    const rows = load();
+    const csv = ['Ticket,Vehicle,Method,Amount,Paid,Date'];
+    rows.forEach(r=> csv.push(`${r.ticket},${r.vehicle},${r.method},${r.amount},${r.paid},${r.date}`));
+    const blob = new Blob([csv.join('\\n')], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download='parking_payments.csv'; a.click();
+  };
+
+  document.getElementById('btnClearAll').onclick = ()=>{
+    if(confirm('Ștergi toate înregistrările?')){
+      save([]); render();
+    }
+  };
+
+  document.getElementById('btnResetFilters').onclick = e=>{
+    e.preventDefault();
+    fromDateEl.value=''; toDateEl.value=''; searchEl.value=''; render();
+  };
+
+  fromDateEl.oninput=toDateEl.oninput=searchEl.oninput=render;
+  render();
+</script>
 </body>
 </html>
