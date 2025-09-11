@@ -81,6 +81,27 @@
         msg.textContent = "Payment status: " + result.paymentIntent.status;
       }
     };
-  </script>
+  </script><script src="https://js.stripe.com/v3"></script>
+<button id="payBtn">Pay</button>
+<script>
+  const stripe = Stripe("PK_REPLACE_ME"); // pk_live_... sau pk_test_...
+
+  document.getElementById("payBtn").addEventListener("click", async () => {
+    // Adună câmpurile tale
+    const plate = document.getElementById("plate").value.trim();
+    const loc   = document.getElementById("loc").value.trim();
+    const time  = document.getElementById("time").value.trim();
+
+    const res = await fetch("/.netlify/functions/create-checkout-session", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ plate, loc, time })
+    });
+    const { id, error } = await res.json();
+    if (error) { alert(error); return; }
+
+    stripe.redirectToCheckout({ sessionId: id });
+  });
+</script>
 </body>
 </html>
