@@ -3,44 +3,80 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Panel Plăți Parcări</title>
+  <title>Park Quick</title>
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#ec4899">
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{
+      --brand:#ec4899;      /* roz */
+      --brand-dark:#db2777; /* roz mai închis */
+      --brand-ink:#166534;  /* verde */
+    }
+    .brand-btn{ background: linear-gradient(135deg,var(--brand),var(--brand-dark)); }
+    .brand-ring:focus{ outline: none; box-shadow: 0 0 0 3px rgba(236,72,153,.35); }
+    .chip{ display:inline-block; padding:.25rem .6rem; border-radius:9999px; font-size:.75rem; font-weight:600 }
+    .chip-qr{ background:#ecfeff; color:#155e75 }
+    .chip-card{ background:#fdf2f8; color:#9d174d }
+    .chip-cash{ background:#f0fdf4; color:#166534 }
+    .chip-wallet{ background:#f0fdf4; color:#166534 }
+  </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body class="bg-slate-50 min-h-screen text-slate-800">
   <div class="max-w-6xl mx-auto p-4 sm:p-6">
     <header class="flex flex-col sm:flex-row sm:items-end gap-3 sm:justify-between mb-6">
       <div>
-        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Panel Plăți Parcări</h1>
-        <p class="text-slate-600">Datele se salvează în browser (LocalStorage). Pentru backup folosește Export CSV.</p>
+        <h1 class="text-3xl font-extrabold tracking-tight" style="color:var(--brand-dark)">Park Quick</h1>
+        <p class="text-slate-600">Datele se salvează doar local (LocalStorage). Pentru plăți reale cu cardul ai nevoie de un procesator (Stripe/PayU/etc.).</p>
       </div>
       <div class="flex items-center gap-2">
-        <button id="btnExport" class="px-3 py-2 rounded-xl shadow bg-white border hover:bg-slate-50">Export CSV</button>
-        <button id="btnClearAll" class="px-3 py-2 rounded-xl shadow bg-white border hover:bg-slate-50">Șterge toate</button>
+        <button id="btnExport" class="px-3 py-2 rounded-xl shadow bg-white border hover:bg-slate-50 brand-ring">Export CSV</button>
+        <button id="btnClearAll" class="px-3 py-2 rounded-xl shadow bg-white border hover:bg-slate-50 brand-ring">Șterge toate</button>
       </div>
     </header>
 
     <!-- Formular -->
     <section class="bg-white rounded-2xl shadow p-4 sm:p-6 mb-6">
-      <h2 class="text-lg font-semibold mb-3">Adaugă plată</h2>
+      <h2 class="text-lg font-semibold mb-3 text-slate-900">Adaugă plată</h2>
       <form id="payForm" class="grid sm:grid-cols-6 gap-3">
-        <input class="col-span-2 px-3 py-2 border rounded-xl" id="ticket" placeholder="Nr. tichet" required />
-        <input class="col-span-2 px-3 py-2 border rounded-xl" id="vehicle" placeholder="Nr. înmatriculare" required />
-        <select class="col-span-2 px-3 py-2 border rounded-xl" id="method" required>
+        <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="ticket" placeholder="Nr. tichet" required />
+        <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="vehicle" placeholder="Nr. înmatriculare" required />
+        <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="location" placeholder="Nr. locație (ex. L1, 101…)" />
+
+        <select class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="method" required>
           <option value="">Metodă plată</option>
           <option>QR</option>
           <option>Card</option>
           <option>Cash</option>
-          <option>UPI</option>
           <option>Wallet</option>
         </select>
-        <input class="col-span-2 px-3 py-2 border rounded-xl" id="amount" type="number" min="0" step="0.01" placeholder="Sumă" required />
-        <select class="col-span-2 px-3 py-2 border rounded-xl" id="paid" required>
+        <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="amount" type="number" min="0" step="0.01" placeholder="Sumă" required />
+        <select class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="paid" required>
           <option value="">Plătit?</option>
           <option value="Y">Y</option>
           <option value="N">N</option>
         </select>
-        <input class="col-span-2 px-3 py-2 border rounded-xl" id="date" type="date" />
-        <button class="col-span-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700">Adaugă</button>
+        <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="date" type="date" />
+
+        <!-- Card -->
+        <div id="cardBlock" class="col-span-6 grid sm:grid-cols-6 gap-3 hidden">
+          <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="cardNumber" inputmode="numeric" pattern="[0-9 ]*" placeholder="Număr card" />
+          <input class="col-span-1 px-3 py-2 border rounded-xl brand-ring" id="cardExp" inputmode="numeric" placeholder="Exp (MM/YY)" />
+          <input class="col-span-1 px-3 py-2 border rounded-xl brand-ring" id="cardCVV" inputmode="numeric" placeholder="CVV" />
+          <div class="col-span-2 flex items-center text-xs text-slate-500">
+            ⚠️ Nu stocăm CVV și nici numărul complet — doar ultimele 4 cifre + expirarea.
+          </div>
+        </div>
+
+        <!-- Wallet -->
+        <div id="walletBlock" class="col-span-6 grid sm:grid-cols-6 gap-3 hidden">
+          <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="walletId" placeholder="Wallet ID / Ref" />
+          <div class="col-span-4 text-xs text-slate-500 flex items-center">Notează ID-ul de tranzacție pentru reconcilieri.</div>
+        </div>
+
+        <button class="col-span-2 px-4 py-2 rounded-xl text-white font-medium brand-btn hover:opacity-95">Adaugă</button>
       </form>
     </section>
 
@@ -49,33 +85,33 @@
       <div class="grid sm:grid-cols-4 gap-3 items-end">
         <div>
           <label class="block text-sm text-slate-600 mb-1">De la</label>
-          <input id="fromDate" type="date" class="w-full px-3 py-2 border rounded-xl" />
+          <input id="fromDate" type="date" class="w-full px-3 py-2 border rounded-xl brand-ring" />
         </div>
         <div>
           <label class="block text-sm text-slate-600 mb-1">Până la</label>
-          <input id="toDate" type="date" class="w-full px-3 py-2 border rounded-xl" />
+          <input id="toDate" type="date" class="w-full px-3 py-2 border rounded-xl brand-ring" />
         </div>
         <div>
           <label class="block text-sm text-slate-600 mb-1">Căutare</label>
-          <input id="search" placeholder="tichet / număr / metodă" class="w-full px-3 py-2 border rounded-xl" />
+          <input id="search" placeholder="tichet / număr / metodă / locație" class="w-full px-3 py-2 border rounded-xl brand-ring" />
         </div>
         <div class="flex gap-2">
-          <button id="btnResetFilters" class="mt-6 px-3 py-2 rounded-xl shadow bg-white border hover:bg-slate-50 w-full">Reset</button>
+          <button id="btnResetFilters" class="mt-6 px-3 py-2 rounded-xl shadow bg-white border hover:bg-slate-50 brand-ring w-full">Reset</button>
         </div>
       </div>
 
       <div class="grid sm:grid-cols-3 gap-3 mt-4">
-        <div class="p-4 rounded-2xl bg-slate-100">
+        <div class="p-4 rounded-2xl" style="background:linear-gradient(135deg,#fdf2f8,#fce7f3)">
           <div class="text-sm text-slate-600">Total azi (Plătit = Y)</div>
-          <div id="todayTotal" class="text-2xl font-semibold">0.00</div>
+          <div id="todayTotal" class="text-3xl font-bold" style="color:var(--brand-ink)">0.00</div>
         </div>
-        <div class="p-4 rounded-2xl bg-slate-100">
+        <div class="p-4 rounded-2xl" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7)">
           <div class="text-sm text-slate-600">Total filtrat (Plătit = Y)</div>
-          <div id="filteredTotal" class="text-2xl font-semibold">0.00</div>
+          <div id="filteredTotal" class="text-3xl font-bold" style="color:var(--brand-ink)">0.00</div>
         </div>
-        <div class="p-4 rounded-2xl bg-slate-100">
+        <div class="p-4 rounded-2xl" style="background:linear-gradient(135deg,#ecfeff,#f0f9ff)">
           <div class="text-sm text-slate-600">Total general (Plătit = Y)</div>
-          <div id="grandTotal" class="text-2xl font-semibold">0.00</div>
+          <div id="grandTotal" class="text-3xl font-bold" style="color:var(--brand-ink)">0.00</div>
         </div>
       </div>
     </section>
@@ -88,7 +124,9 @@
             <tr>
               <th class="py-3 px-4">Tichet</th>
               <th class="py-3 px-4">Nr. auto</th>
+              <th class="py-3 px-4">Locație</th>
               <th class="py-3 px-4">Metodă</th>
+              <th class="py-3 px-4">Detalii metodă</th>
               <th class="py-3 px-4">Sumă</th>
               <th class="py-3 px-4">Plătit</th>
               <th class="py-3 px-4">Data</th>
@@ -100,11 +138,13 @@
       </div>
     </section>
 
-    <footer class="text-center text-slate-500 text-xs mt-6">Datele sunt stocate doar în acest browser. Pentru backup folosește Export CSV.</footer>
+    <footer class="text-center text-slate-500 text-xs mt-6">
+      ⚠️ Nu stocăm CVV sau numărul complet al cardului. Pentru plăți reale integrează un procesator (Stripe/PayU/Netopia etc.).
+    </footer>
   </div>
 
 <script>
-  const KEY = 'parking.payments.v1';
+  const KEY = 'parkquick.v1';
   const fmt = n => (Number(n||0)).toFixed(2);
   const todayISO = () => new Date().toISOString().slice(0,10);
 
@@ -119,12 +159,30 @@
   const fromDateEl = document.getElementById('fromDate');
   const toDateEl = document.getElementById('toDate');
   const searchEl = document.getElementById('search');
+  const methodEl = document.getElementById('method');
+  const cardBlock = document.getElementById('cardBlock');
+  const walletBlock = document.getElementById('walletBlock');
 
   document.getElementById('date').value = todayISO();
 
+  function showMethodBlocks(){
+    const val = methodEl.value;
+    cardBlock.classList.toggle('hidden', val!=='Card');
+    walletBlock.classList.toggle('hidden', val!=='Wallet');
+  }
+  methodEl.addEventListener('change', showMethodBlocks); showMethodBlocks();
+
+  function chipFor(method){
+    if(method==='QR') return '<span class="chip chip-qr">QR</span>';
+    if(method==='Card') return '<span class="chip chip-card">Card</span>';
+    if(method==='Cash') return '<span class="chip chip-cash">Cash</span>';
+    if(method==='Wallet') return '<span class="chip chip-wallet">Wallet</span>';
+    return method||'';
+  }
+
   function render(){
     let rows = load();
-    const q = searchEl.value.toLowerCase();
+    const q = (searchEl.value||'').toLowerCase();
     const from = fromDateEl.value;
     const to = toDateEl.value;
     const today = todayISO();
@@ -135,24 +193,27 @@
     rows.forEach((r,i)=>{
       if(r.paid==='Y'){ grandTotal += Number(r.amount||0); }
       let match = true;
-      if(q && !(r.ticket.toLowerCase().includes(q)||r.vehicle.toLowerCase().includes(q)||r.method.toLowerCase().includes(q))){ match=false; }
+      const hay = [r.ticket,r.vehicle,r.location,r.method,r.methodDetails].join(' ').toLowerCase();
+      if(q && !hay.includes(q)) match=false;
       if(from && r.date<from) match=false;
       if(to && r.date>to) match=false;
       if(match && r.paid==='Y'){ totalFiltered += Number(r.amount||0); }
       if(r.date===today && r.paid==='Y'){ totalToday += Number(r.amount||0); }
       if(match){
-        html += `<tr class=\"border-b\">
-          <td class=\"px-4 py-2\">${r.ticket}</td>
-          <td class=\"px-4 py-2\">${r.vehicle}</td>
-          <td class=\"px-4 py-2\">${r.method}</td>
-          <td class=\"px-4 py-2\">${fmt(r.amount)}</td>
-          <td class=\"px-4 py-2\">${r.paid}</td>
-          <td class=\"px-4 py-2\">${r.date}</td>
-          <td class=\"px-4 py-2 text-right\"><button onclick=\"delRow(${i})\" class=\"text-red-500 hover:underline\">șterge</button></td>
+        html += `<tr class="border-b">
+          <td class="px-4 py-2">${r.ticket}</td>
+          <td class="px-4 py-2">${r.vehicle}</td>
+          <td class="px-4 py-2">${r.location||''}</td>
+          <td class="px-4 py-2">${chipFor(r.method)}</td>
+          <td class="px-4 py-2">${r.methodDetails||''}</td>
+          <td class="px-4 py-2 font-medium">${fmt(r.amount)}</td>
+          <td class="px-4 py-2">${r.paid}</td>
+          <td class="px-4 py-2">${r.date}</td>
+          <td class="px-4 py-2 text-right"><button onclick="delRow(${i})" class="text-red-500 hover:underline">șterge</button></td>
         </tr>`;
       }
     });
-    rowsEl.innerHTML = html||'<tr><td class=\"px-4 py-2\" colspan=\"7\">Nici o înregistrare</td></tr>';
+    rowsEl.innerHTML = html||'<tr><td class="px-4 py-2" colspan="9">Nici o înregistrare</td></tr>';
     todayTotalEl.textContent = fmt(totalToday);
     filteredTotalEl.textContent = fmt(totalFiltered);
     grandTotalEl.textContent = fmt(grandTotal);
@@ -161,49 +222,54 @@
   function delRow(i){
     let rows = load();
     rows.splice(i,1);
-    save(rows);
-    render();
+    save(rows); render();
   }
 
   form.addEventListener('submit', e=>{
     e.preventDefault();
-    const row = {
-      ticket: document.getElementById('ticket').value,
-      vehicle: document.getElementById('vehicle').value,
-      method: document.getElementById('method').value,
-      amount: document.getElementById('amount').value,
-      paid: document.getElementById('paid').value,
-      date: document.getElementById('date').value||todayISO()
-    };
-    let rows = load();
-    rows.push(row);
+    const ticket=document.getElementById('ticket').value.trim();
+    const vehicle=document.getElementById('vehicle').value.trim();
+    const location=document.getElementById('location').value.trim();
+    const method=document.getElementById('method').value;
+    const amount=document.getElementById('amount').value;
+    const paid=document.getElementById('paid').value;
+    const date=document.getElementById('date').value||todayISO();
+
+    let methodDetails='';
+    if(method==='Card'){
+      const raw=(document.getElementById('cardNumber').value||'').replace(/\\s+/g,'');
+      const last4=raw.slice(-4);
+      const exp=document.getElementById('cardExp').value.trim();
+      methodDetails=last4?`**** **** **** ${last4} · Exp ${exp||'--/--'}`:`Card · Exp ${exp||'--/--'}`;
+    }else if(method==='Wallet'){
+      const wid=document.getElementById('walletId').value.trim();
+      methodDetails=wid?`Wallet: ${wid}`:'Wallet';
+    }
+
+    let rows=load();
+    rows.push({ticket,vehicle,location,method,methodDetails,amount,paid,date});
     save(rows);
+
     form.reset();
-    document.getElementById('date').value = todayISO();
-    render();
+    document.getElementById('date').value=todayISO();
+    showMethodBlocks(); render();
   });
 
-  document.getElementById('btnExport').onclick = ()=>{
-    const rows = load();
-    const csv = ['Ticket,Vehicle,Method,Amount,Paid,Date'];
-    rows.forEach(r=> csv.push(`${r.ticket},${r.vehicle},${r.method},${r.amount},${r.paid},${r.date}`));
-    const blob = new Blob([csv.join('\\n')], {type:'text/csv'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href=url; a.download='parking_payments.csv'; a.click();
+  document.getElementById('btnExport').onclick=()=>{
+    const rows=load();
+    const csv=['Ticket,Vehicle,Location,Method,MethodDetails,Amount,Paid,Date'];
+    rows.forEach(r=>csv.push([r.ticket,r.vehicle,r.location||'',r.method,(r.methodDetails||'').replace(/,/g,' '),r.amount,r.paid,r.date].join(',')));
+    const blob=new Blob([csv.join('\\n')],{type:'text/csv'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='park_quick.csv';a.click();
   };
 
-  document.getElementById('btnClearAll').onclick = ()=>{
-    if(confirm('Ștergi toate înregistrările?')){
-      save([]); render();
-    }
+  document.getElementById('btnClearAll').onclick=()=>{
+    if(confirm('Ștergi toate înregistrările?')){save([]);render();}
   };
-
-  document.getElementById('btnResetFilters').onclick = e=>{
-    e.preventDefault();
-    fromDateEl.value=''; toDateEl.value=''; searchEl.value=''; render();
+  document.getElementById('btnResetFilters').onclick=e=>{
+    e.preventDefault();fromDateEl.value='';toDateEl.value='';searchEl.value='';render();
   };
-
   fromDateEl.oninput=toDateEl.oninput=searchEl.oninput=render;
   render();
 </script>
