@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="ro">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RingGo</title>
+  <title>Park Quick</title>
   <link rel="icon" href="icon-192.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
@@ -18,10 +18,10 @@
     .brand-btn{ background: linear-gradient(135deg,var(--brand),var(--brand-dark)); }
     .brand-ring:focus{ outline: none; box-shadow: 0 0 0 3px rgba(236,72,153,.35); }
     .chip{ display:inline-block; padding:.25rem .6rem; border-radius:9999px; font-size:.75rem; font-weight:600 }
-    .chip-qr{ background:#ecfeff; color:#155e75 }
     .chip-card{ background:#fdf2f8; color:#9d174d }
-    .chip-cash{ background:#f0fdf4; color:#166534 }
     .chip-wallet{ background:#f0fdf4; color:#166534 }
+    .chip-qr{ background:#ecfeff; color:#155e75 }
+    .chip-cash{ background:#f0fdf4; color:#166534 }
   </style>
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800">
@@ -29,7 +29,7 @@
     <header class="flex flex-col sm:flex-row sm:items-end gap-3 sm:justify-between mb-6">
       <div>
         <h1 class="text-3xl font-extrabold tracking-tight" style="color:var(--brand-dark)">Park Quick</h1>
-        <p class="text-slate-600">Datele se salvează doar local (LocalStorage). Pentru plăți reale cu cardul ai nevoie de un procesator (Stripe/PayU/etc.).</p>
+        <p class="text-slate-600">Datele se salvează local (LocalStorage). Nu procesăm plăți reale cu cardul.</p>
       </div>
       <div class="flex items-center gap-2">
         <button id="btnExport" class="px-3 py-2 rounded-xl shadow bg-white border hover:bg-slate-50 brand-ring">Export CSV</button>
@@ -41,39 +41,54 @@
     <section class="bg-white rounded-2xl shadow p-4 sm:p-6 mb-6">
       <h2 class="text-lg font-semibold mb-3 text-slate-900">Adaugă plată</h2>
       <form id="payForm" class="grid sm:grid-cols-6 gap-3">
-        <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="ticket" placeholder="Nr. tichet" required />
-        <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="vehicle" placeholder="Nr. înmatriculare" required />
-        <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="location" placeholder="Nr. locație (ex. L1, 101…)" />
+        <!-- Locație + Mașină -->
+        <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="location" placeholder="Nr. locație (la alegere)" required />
+        <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="vehicle" placeholder="Nr. mașină" required />
+        <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="ticket" placeholder="Nr. tichet (opțional)" />
 
-        <select class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="method" required>
-          <option value="">Metodă plată</option>
-          <option>long card number<option>
-            <option>data exp<option>
-              <opyion>cvv</option>
-          <option>Card</option>
-        </select>
-        <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="amount" type="number" min="0" step="0.01" placeholder="Sumă" required />
-        <select class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="paid" required>
-          <option value="">Pay</option>
-        <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="date" type="date" />
+        <!-- Durată -->
+        <div class="col-span-2">
+          <input class="w-full px-3 py-2 border rounded-xl brand-ring" id="durationValue" type="number" min="1" step="1" placeholder="Durată (număr)" required />
+        </div>
+        <div class="col-span-1">
+          <select class="w-full px-3 py-2 border rounded-xl brand-ring" id="durationUnit" required>
+            <option value="minute">minute</option>
+            <option value="ore">ore</option>
+          </select>
+        </div>
 
-        <!-- Card -->
-        <div id="cardBlock" class="col-span-6 grid sm:grid-cols-6 gap-3 hidden">
-          <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="cardNumber" inputmode="numeric" pattern="[0-9 ]*" placeholder="Număr card" />
+        <!-- Metodă plată -->
+        <div class="col-span-3">
+          <select class="w-full px-3 py-2 border rounded-xl brand-ring" id="method" required>
+            <option>Card</option>
+            <option>QR</option>
+            <option>Wallet</option>
+            <option>Cash</option>
+          </select>
+        </div>
+
+        <!-- Card details -->
+        <div id="cardBlock" class="col-span-6 grid sm:grid-cols-6 gap-3">
+          <input class="col-span-3 px-3 py-2 border rounded-xl brand-ring" id="cardNumber" inputmode="numeric" pattern="[0-9 ]*" placeholder="Număr card (lung)" />
           <input class="col-span-1 px-3 py-2 border rounded-xl brand-ring" id="cardExp" inputmode="numeric" placeholder="Exp (MM/YY)" />
           <input class="col-span-1 px-3 py-2 border rounded-xl brand-ring" id="cardCVV" inputmode="numeric" placeholder="CVV" />
-          <div class="col-span-2 flex items-center text-xs text-slate-500">
-            ⚠️ Nu stocăm CVV și nici numărul complet — doar ultimele 4 cifre + expirarea.
+          <div class="col-span-1 flex items-center text-xs text-slate-500">
+            ⚠️ Nu stocăm CVV și nici numărul complet.
           </div>
         </div>
 
-        <!-- Wallet -->
-        <div id="walletBlock" class="col-span-6 grid sm:grid-cols-6 gap-3 hidden">
-          <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="walletId" placeholder="Wallet ID / Ref" />
-          <div class="col-span-4 text-xs text-slate-500 flex items-center">Notează ID-ul de tranzacție pentru reconcilieri.</div>
-        </div>
+        <!-- Sumă (opțională manual) + Data -->
+        <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="amount" type="number" min="0" step="0.01" placeholder="Sumă (opțional)" />
+        <input class="col-span-2 px-3 py-2 border rounded-xl brand-ring" id="date" type="date" />
 
-        <button class="col-span-2 px-4 py-2 rounded-xl text-white font-medium brand-btn hover:opacity-95">Adaugă</button>
+        <button class="col-span-2 px-4 py-2 rounded-xl text-white font-medium brand-btn hover:opacity-95">Salvează</button>
+
+        <!-- Număr de plată generat -->
+        <div class="col-span-6 hidden" id="refWrap">
+          <div class="mt-2 p-3 rounded-xl border bg-pink-50 text-pink-900">
+            Număr de plată generat: <strong id="paymentRef"></strong>
+          </div>
+        </div>
       </form>
     </section>
 
@@ -90,7 +105,7 @@
         </div>
         <div>
           <label class="block text-sm text-slate-600 mb-1">Căutare</label>
-          <input id="search" placeholder="tichet / număr / metodă / locație" class="w-full px-3 py-2 border rounded-xl brand-ring" />
+          <input id="search" placeholder="mașină / locație / metodă" class="w-full px-3 py-2 border rounded-xl brand-ring" />
         </div>
         <div class="flex gap-2">
           <button id="btnResetFilters" class="mt-6 px-3 py-2 rounded-xl shadow bg-white border hover:bg-slate-50 brand-ring w-full">Reset</button>
@@ -119,13 +134,13 @@
         <table class="min-w-full">
           <thead class="bg-slate-100 text-left text-sm">
             <tr>
-              <th class="py-3 px-4">Tichet</th>
-              <th class="py-3 px-4">Nr. auto</th>
+              <th class="py-3 px-4">Plată #</th>
               <th class="py-3 px-4">Locație</th>
+              <th class="py-3 px-4">Nr. mașină</th>
+              <th class="py-3 px-4">Durată</th>
               <th class="py-3 px-4">Metodă</th>
               <th class="py-3 px-4">Detalii metodă</th>
               <th class="py-3 px-4">Sumă</th>
-              <th class="py-3 px-4">Plătit</th>
               <th class="py-3 px-4">Data</th>
               <th class="py-3 px-4">—</th>
             </tr>
@@ -136,14 +151,22 @@
     </section>
 
     <footer class="text-center text-slate-500 text-xs mt-6">
-      ⚠️ Nu stocăm CVV sau numărul complet al cardului. Pentru plăți reale integrează un procesator (Stripe/PayU/Netopia etc.).
+      ⚠️ CVV și numărul complet de card NU se stochează. Pentru plăți reale integrează un procesator (Stripe/PayU/Netopia etc.).
     </footer>
   </div>
 
 <script>
-  const KEY = 'parkquick.v1';
+  const KEY = 'parkquick.v2';
   const fmt = n => (Number(n||0)).toFixed(2);
   const todayISO = () => new Date().toISOString().slice(0,10);
+  const rand4 = () => String(Math.floor(1000 + Math.random()*9000));
+  const genRef = () => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const da = String(d.getDate()).padStart(2,'0');
+    return `PQ-${y}${m}${da}-${rand4()}`;
+  };
 
   const load = () => JSON.parse(localStorage.getItem(KEY)||'[]');
   const save = rows => localStorage.setItem(KEY, JSON.stringify(rows));
@@ -158,16 +181,10 @@
   const searchEl = document.getElementById('search');
   const methodEl = document.getElementById('method');
   const cardBlock = document.getElementById('cardBlock');
-  const walletBlock = document.getElementById('walletBlock');
+  const refWrap = document.getElementById('refWrap');
+  const paymentRefEl = document.getElementById('paymentRef');
 
   document.getElementById('date').value = todayISO();
-
-  function showMethodBlocks(){
-    const val = methodEl.value;
-    cardBlock.classList.toggle('hidden', val!=='Card');
-    walletBlock.classList.toggle('hidden', val!=='Wallet');
-  }
-  methodEl.addEventListener('change', showMethodBlocks); showMethodBlocks();
 
   function chipFor(method){
     if(method==='QR') return '<span class="chip chip-qr">QR</span>';
@@ -188,29 +205,32 @@
     let totalToday = 0, totalFiltered = 0, grandTotal = 0;
 
     rows.forEach((r,i)=>{
-      if(r.paid==='Y'){ grandTotal += Number(r.amount||0); }
+      const amt = Number(r.amount||0);
+      grandTotal += amt;
       let match = true;
-      const hay = [r.ticket,r.vehicle,r.location,r.method,r.methodDetails].join(' ').toLowerCase();
+      const hay = [r.ref,r.location,r.vehicle,r.method,r.methodDetails,(r.durationText||'')].join(' ').toLowerCase();
       if(q && !hay.includes(q)) match=false;
       if(from && r.date<from) match=false;
       if(to && r.date>to) match=false;
-      if(match && r.paid==='Y'){ totalFiltered += Number(r.amount||0); }
-      if(r.date===today && r.paid==='Y'){ totalToday += Number(r.amount||0); }
+      if(match) totalFiltered += amt;
+      if(r.date===today) totalToday += amt;
+
       if(match){
         html += `<tr class="border-b">
-          <td class="px-4 py-2">${r.ticket}</td>
+          <td class="px-4 py-2 font-medium">${r.ref}</td>
+          <td class="px-4 py-2">${r.location}</td>
           <td class="px-4 py-2">${r.vehicle}</td>
-          <td class="px-4 py-2">${r.location||''}</td>
+          <td class="px-4 py-2">${r.durationText||''}</td>
           <td class="px-4 py-2">${chipFor(r.method)}</td>
           <td class="px-4 py-2">${r.methodDetails||''}</td>
-          <td class="px-4 py-2 font-medium">${fmt(r.amount)}</td>
-          <td class="px-4 py-2">${r.paid}</td>
+          <td class="px-4 py-2 font-semibold">${fmt(amt)}</td>
           <td class="px-4 py-2">${r.date}</td>
           <td class="px-4 py-2 text-right"><button onclick="delRow(${i})" class="text-red-500 hover:underline">șterge</button></td>
         </tr>`;
       }
     });
-    rowsEl.innerHTML = html||'<tr><td class="px-4 py-2" colspan="9">Nici o înregistrare</td></tr>';
+
+    rowsEl.innerHTML = html || '<tr><td class="px-4 py-2" colspan="9">Nici o înregistrare</td></tr>';
     todayTotalEl.textContent = fmt(totalToday);
     filteredTotalEl.textContent = fmt(totalFiltered);
     grandTotalEl.textContent = fmt(grandTotal);
@@ -222,52 +242,83 @@
     save(rows); render();
   }
 
+  function maybeToggleCardBlock(){
+    const show = methodEl.value === 'Card';
+    cardBlock.style.display = show ? 'grid' : 'none';
+  }
+  methodEl.addEventListener('change', maybeToggleCardBlock);
+  maybeToggleCardBlock();
+
   form.addEventListener('submit', e=>{
     e.preventDefault();
-    const ticket=document.getElementById('ticket').value.trim();
-    const vehicle=document.getElementById('vehicle').value.trim();
-    const location=document.getElementById('location').value.trim();
-    const method=document.getElementById('method').value;
-    const amount=document.getElementById('amount').value;
-    const paid=document.getElementById('paid').value;
-    const date=document.getElementById('date').value||todayISO();
 
-    let methodDetails='';
+    const location = document.getElementById('location').value.trim();
+    const vehicle  = document.getElementById('vehicle').value.trim();
+    const ticket   = document.getElementById('ticket').value.trim();
+    const durVal   = Number(document.getElementById('durationValue').value);
+    const durUnit  = document.getElementById('durationUnit').value; // minute | ore
+    const durationText = `${durVal} ${durUnit}`;
+    const method   = document.getElementById('method').value;
+    const amount   = document.getElementById('amount').value || 0;
+    const date     = (document.getElementById('date').value || todayISO());
+
+    // Card (nu stocăm complet + nu stocăm CVV)
+    let methodDetails = method;
     if(method==='Card'){
-      const raw=(document.getElementById('cardNumber').value||'').replace(/\\s+/g,'');
-      const last4=raw.slice(-4);
-      const exp=document.getElementById('cardExp').value.trim();
-      methodDetails=last4?`**** **** **** ${last4} · Exp ${exp||'--/--'}`:`Card · Exp ${exp||'--/--'}`;
-    }else if(method==='Wallet'){
-      const wid=document.getElementById('walletId').value.trim();
-      methodDetails=wid?`Wallet: ${wid}`:'Wallet';
+      const raw = (document.getElementById('cardNumber').value||'').replace(/\s+/g,'');
+      const last4 = raw.slice(-4);
+      const exp = document.getElementById('cardExp').value.trim();
+      methodDetails = last4 ? `**** **** **** ${last4} · Exp ${exp||'--/--'}` : `Card · Exp ${exp||'--/--'}`;
+      // NU salvăm CVV sau numărul complet
+    } else if(method==='Wallet'){
+      methodDetails = 'Wallet';
+    } else if(method==='QR'){
+      methodDetails = 'QR';
+    } else if(method==='Cash'){
+      methodDetails = 'Cash';
     }
 
-    let rows=load();
-    rows.push({ticket,vehicle,location,method,methodDetails,amount,paid,date});
+    const ref = genRef();
+
+    let rows = load();
+    rows.push({ ref, location, vehicle, ticket, durationText, method, methodDetails, amount, date });
     save(rows);
 
+    // Afișează ref
+    document.getElementById('paymentRef').textContent = ref;
+    refWrap.classList.remove('hidden');
+
     form.reset();
-    document.getElementById('date').value=todayISO();
-    showMethodBlocks(); render();
+    document.getElementById('date').value = todayISO();
+    maybeToggleCardBlock();
+    render();
   });
 
+  // Export / Reset / Filtre
   document.getElementById('btnExport').onclick=()=>{
     const rows=load();
-    const csv=['Ticket,Vehicle,Location,Method,MethodDetails,Amount,Paid,Date'];
-    rows.forEach(r=>csv.push([r.ticket,r.vehicle,r.location||'',r.method,(r.methodDetails||'').replace(/,/g,' '),r.amount,r.paid,r.date].join(',')));
-    const blob=new Blob([csv.join('\\n')],{type:'text/csv'});
+    const csv=['Ref,Location,Vehicle,Ticket,Duration,Method,MethodDetails,Amount,Date'];
+    rows.forEach(r=>csv.push([
+      r.ref,r.location,r.vehicle,(r.ticket||''),
+      (r.durationText||''),r.method,(r.methodDetails||'').replace(/,/g,' '),
+      r.amount,r.date
+    ].join(',')));
+    const blob=new Blob([csv.join('\n')],{type:'text/csv'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');a.href=url;a.download='park_quick.csv';a.click();
   };
 
   document.getElementById('btnClearAll').onclick=()=>{
-    if(confirm('Ștergi toate înregistrările?')){save([]);render();}
+    if(confirm('Ștergi toate înregistrările?')){localStorage.removeItem(KEY);render();}
   };
+
   document.getElementById('btnResetFilters').onclick=e=>{
     e.preventDefault();fromDateEl.value='';toDateEl.value='';searchEl.value='';render();
   };
+
   fromDateEl.oninput=toDateEl.oninput=searchEl.oninput=render;
+
+  // init
   render();
 </script>
 </body>
