@@ -3,143 +3,165 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QRtap — Start Parking</title>
-  <meta name="description" content="Start your parking in seconds. We don’t store your data." />
+  <title>Parking Payment</title>
+
+  <!-- PayPal JS SDK -->
+  <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=GBP&intent=capture&components=buttons"></script>
+
   <style>
-    :root{
-      --bg:#0b1020; --card:#121726; --text:#eef2f7; --muted:#9fb0c6;
-      --line:#1f2637; --accent:#1eb980; --accent-2:#18a16e; --danger:#d95757;
+    body {
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #f0f7ff, #e6f2ff);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
     }
-    *{box-sizing:border-box}
-    html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
-    .wrap{max-width:860px;margin:0 auto;padding:20px}
-    .brand{display:flex;align-items:center;gap:12px;margin:4px 0 16px}
-    .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#2c3757,#0e6b4f)}
-    .brand h1{margin:0;font-size:26px;letter-spacing:.2px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 10px 24px rgba(0,0,0,.25)}
-    p.muted{color:var(--muted);margin:6px 0 18px}
-    label{display:block;margin:12px 6px 6px;font-weight:600}
-    input,select{width:100%;background:#0f1424;border:1px solid var(--line);color:var(--text);padding:14px;border-radius:12px;outline:none}
-    .row{display:grid;gap:12px;grid-template-columns:1fr}
-    @media (min-width:720px){ .row{grid-template-columns:1fr 1fr} }
-    .actions{display:grid;gap:10px;margin-top:16px}
-    .btn{display:inline-block;text-align:center;border:0;border-radius:14px;padding:14px 18px;font-weight:800;cursor:pointer}
-    .btn.primary{background:var(--accent);color:#04251f}
-    .btn.primary:hover{background:var(--accent-2)}
-    .btn.secondary{background:#0e1a2e;color:#bcd6ff;border:1px solid #223d6a}
-    .note{font-size:12px;color:#8aa1bd;margin-top:6px;text-align:center}
-    .toast{display:none;margin-top:12px;padding:12px 14px;border-radius:10px;background:#0e2b20;color:#c9ffea;border:1px solid #135a45;font-size:14px}
-    .err{display:none;margin-top:12px;padding:12px 14px;border-radius:10px;background:#2b1212;color:#ffd6d6;border:1px solid #6e2a2a;font-size:14px}
-    footer{margin:18px 0 8px;text-align:center;color:#7f90a8;font-size:12px}
-    a.link{color:#98c7ff}
+    .card {
+      background: #fff;
+      padding: 24px;
+      border-radius: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+    }
+    h1 {
+      color: #0070ba;
+      margin-bottom: 8px;
+    }
+    h2 {
+      margin: 8px 0 20px;
+      color: #333;
+    }
+    .info {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      outline: none;
+    }
+    input:focus {
+      border-color: #0070ba;
+      box-shadow: 0 0 0 2px rgba(0,112,186,0.2);
+    }
+    .price {
+      font-size: 22px;
+      font-weight: bold;
+      color: #28a745;
+      margin-bottom: 20px;
+    }
+    #paypal-button-container {
+      margin-top: 16px;
+    }
+    .msg {
+      margin-top: 16px;
+      font-size: 15px;
+      color: #333;
+    }
+    .contact {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #666;
+    }
+    .contact a {
+      color: #0070ba;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="brand">
-      <div class="logo" aria-hidden="true"></div>
-      <h1>QRtap — Start Parking</h1>
+  <div class="card">
+    <h1>Parking Payment</h1>
+    <h2 id="place">Spot …</h2>
+    <div class="info" id="rules">—</div>
+
+    <label for="minutes">Duration (minutes):</label>
+    <input id="minutes" type="number" min="15" step="15" value="60" />
+
+    <div class="price">£<span id="amount">—</span></div>
+    <div id="rounding" class="info"></div>
+
+    <div id="paypal-button-container"></div>
+    <div class="msg" id="msg"></div>
+
+    <div class="contact">
+      Operator contact: <a href="mailto:vldvlad521@gmail.com">vldvlad521@gmail.com</a>
     </div>
-
-    <div class="card">
-      <p class="muted">Fill in the details and continue. We won’t store your data. You can pay in the official RingGo flow, or optionally by card.</p>
-
-      <form id="f" autocomplete="off">
-        <div class="row">
-          <div>
-            <label for="plate">Vehicle plate (VRN)</label>
-            <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required>
-          </div>
-          <div>
-            <label for="loc">Parking location code</label>
-            <input id="loc" name="loc" inputmode="numeric" placeholder="e.g. 647987" required>
-          </div>
-        </div>
-
-        <div class="row">
-          <div>
-            <label for="dur">Duration</label>
-            <select id="dur" name="dur" required>
-              <option value="" hidden>— choose —</option>
-              <option value="0.5">30 minutes</option>
-              <option value="1">1 hour</option>
-              <option value="2">2 hours</option>
-              <option value="3">3 hours</option>
-              <option value="4">4 hours</option>
-              <option value="24">All day (24h)</option>
-              <option value="48">2 days (48h)</option>
-            </select>
-          </div>
-          <div>
-            <label for="veh">Vehicle type (optional)</label>
-            <select id="veh" name="veh">
-              <option value="" selected>Not specified</option>
-              <option>Car</option>
-              <option>Van</option>
-              <option>Motorcycle</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button type="button" class="btn primary" id="ringgoBtn">Continue in RingGo</button>
-          <button type="button" class="btn secondary" id="cardBtn">Pay by card (optional)</button>
-        </div>
-
-        <div id="toast" class="toast">Copied: <span id="copied"></span></div>
-        <div id="err" class="err"></div>
-        <p class="note">RingGo may require login. Card payments open a secure checkout (you can plug SumUp/Stripe link later).</p>
-      </form>
-    </div>
-
-    <footer>© <span id="y"></span> QRtap. <a class="link" href="/">Home</a></footer>
   </div>
 
   <script>
-    const RINGGO_URL = "https://myringgo.co.uk/park"; // fluxul oficial
-    const OPTIONAL_CARD_URL = ""; // pune aici link-ul tău SumUp/Stripe când îl ai (altfel rămâne dezactivat)
+    // —— Parking zone settings ——
+    const ZONES = {
+      Z12: { name: "City Center", pricePerHourGBP: 2, minMinutes: 15, maxHours: 4 },
+      Z99: { name: "Airport", pricePerHourGBP: 3, minMinutes: 30, maxHours: 24 }
+    };
 
-    const f = document.getElementById("f");
-    const toast = document.getElementById("toast");
-    const copied = document.getElementById("copied");
-    const errBox = document.getElementById("err");
-    document.getElementById("y").textContent = new Date().getFullYear();
+    // —— Read QR params (ex: ?zone=Z12&spot=034) ——
+    const params = new URLSearchParams(location.search);
+    const zone = params.get("zone") || "Z12";
+    const spot = params.get("spot") || "000";
 
-    function showErr(msg){ errBox.textContent = msg; errBox.style.display = "block"; setTimeout(()=>errBox.style.display="none", 2500); }
-    function ok(txt){ copied.textContent = txt; toast.style.display = "block"; setTimeout(()=>toast.style.display="none", 1500); }
+    const $place = document.getElementById("place");
+    const $rules = document.getElementById("rules");
+    const $minutes = document.getElementById("minutes");
+    const $amount = document.getElementById("amount");
+    const $rounding = document.getElementById("rounding");
+    const $msg = document.getElementById("msg");
 
-    function getVals(){
-      const plate = document.getElementById("plate").value.trim();
-      const loc   = document.getElementById("loc").value.trim();
-      const dur   = document.getElementById("dur").value.trim();
-      const veh   = document.getElementById("veh").value.trim();
-      return {plate, loc, dur, veh};
+    function quote(zoneCode, minutesInput) {
+      const z = ZONES[zoneCode];
+      if (!z) return { value: "0.00", currency: "GBP", minutes: 0, hours: 0 };
+      const minutes = Math.max(Number(minutesInput || 0), z.minMinutes);
+      const hours = Math.ceil(minutes / 60);
+      const value = (hours * z.pricePerHourGBP).toFixed(2);
+      return { minutes, hours, value, currency: "GBP" };
     }
 
-    async function copySummary({plate, loc, dur, veh}){
-      const summary = `Plate: ${plate} • Location: ${loc} • Duration: ${dur}h${veh?` • Type: ${veh}`:""}`;
-      try { await navigator.clipboard.writeText(summary); ok(summary); } catch(e){}
+    function refresh() {
+      const z = ZONES[zone];
+      $place.textContent = `${z?.name || zone} (${zone}) • Spot ${spot}`;
+      $rules.textContent = `Min ${z.minMinutes} min • Max ${z.maxHours} h • £${z.pricePerHourGBP}/hour`;
+
+      const q = quote(zone, $minutes.value);
+      $amount.textContent = q.value;
+      $rounding.textContent = `(rounded to ${q.hours}h; chosen: ${q.minutes} min)`;
+      return q;
     }
 
-    document.getElementById("ringgoBtn").addEventListener("click", async () => {
-      const v = getVals();
-      if(!v.plate || !v.loc || !v.dur){ showErr("Please complete all required fields."); return; }
-      await copySummary(v);
+    $minutes.addEventListener("input", refresh);
+    const q0 = refresh();
 
-      // Poți păstra queryul pentru analytics (RingGo îl va ignora)
-      const qs = new URLSearchParams({ plate:v.plate, loc:v.loc, dur:v.dur }).toString();
-      // Redirecționează în RingGo (public flow – poate cere login)
-      window.location.href = RINGGO_URL + (RINGGO_URL.includes("?") ? "&" : "?") + qs;
-    });
-
-    document.getElementById("cardBtn").addEventListener("click", async () => {
-      if(!OPTIONAL_CARD_URL){ showErr("Card checkout not configured yet."); return; }
-      const v = getVals();
-      if(!v.plate || !v.loc || !v.dur){ showErr("Please complete all required fields."); return; }
-      await copySummary(v);
-      const qs = new URLSearchParams({ plate:v.plate, loc:v.loc, dur:v.dur }).toString();
-      window.location.href = OPTIONAL_CARD_URL + (OPTIONAL_CARD_URL.includes("?") ? "&" : "?") + qs;
-    });
+    // —— PayPal Buttons ——
+    paypal.Buttons({
+      style: { layout: "vertical", shape: "rect", color: "blue" },
+      createOrder: (data, actions) => {
+        const q = refresh();
+        return actions.order.create({
+          purchase_units: [{
+            amount: { value: q.value, currency_code: q.currency },
+            custom_id: `Z:${zone}|S:${spot}|M:${q.minutes}|E:bmrnicolae@gmail.com`
+          }]
+        });
+      },
+      onApprove: async (data, actions) => {
+        const details = await actions.order.capture();
+        $msg.textContent = "✅ Payment successful! Thank you!";
+      },
+      onError: (err) => {
+        console.error(err);
+        $msg.textContent = "❌ Payment error. Please try again.";
+      }
+    }).render("#paypal-button-container");
   </script>
 </body>
 </html>
