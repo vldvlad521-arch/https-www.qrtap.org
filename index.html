@@ -5,81 +5,107 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>RingGo</title>
 <style>
-  :root{--pink:#f5007a;}
-  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;margin:0;background:#f6f7fb;color:#111}
-  .wrap{max-width:780px;margin:24px auto;padding:0 16px}
-  h1{color:var(--pink);margin:8px 0 4px;font-size:36px}
-  .muted{color:#505257}
-  .card{background:#fff;border-radius:18px;padding:18px;box-shadow:0 12px 30px rgba(0,0,0,.06);margin:18px 0}
-  .field{display:flex;flex-direction:column;gap:8px;margin:10px 0}
-  .field label{font-weight:600}
-  .field input{padding:14px 12px;border:1px solid #dcdde4;border-radius:12px;font-size:16px;background:#fff}
-  .btn{border:0;border-radius:12px;padding:14px 18px;background:linear-gradient(90deg,#ff2f9e,var(--pink));color:#fff;font-size:16px;cursor:pointer}
-  table{width:100%;border-collapse:collapse;font-size:14px}
-  th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;white-space:nowrap}
+  :root{
+    --bg:#f6f7fb; --card:#ffffff; --ink:#111827; --muted:#6b7280;
+    --brand:#f5007a; --ok:#16a34a; --err:#dc2626; --line:#eef0f5;
+    --shadow:0 10px 30px rgba(0,0,0,.08);
+    --radius:18px;
+  }
+  html,body{background:var(--bg);color:var(--ink);margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif}
+  .wrap{max-width:820px;margin:26px auto;padding:0 16px}
+  h1{margin:0 0 6px;color:var(--brand);font-size:42px;letter-spacing:.2px}
+  p.lead{margin:0 0 18px;color:var(--muted)}
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin:16px 0}
+  .card h2{margin:2px 0 12px;font-size:22px}
+  .grid{display:grid;gap:12px}
+  @media(min-width:680px){.grid-2{grid-template-columns:1fr 1fr}}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .label{font-weight:600;font-size:14px}
+  input,select{
+    width:100%;padding:14px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;
+    font-size:16px;outline:none;transition:border .15s ease, box-shadow .15s ease;
+  }
+  input:focus,select:focus{border-color:#cbd5e1;box-shadow:0 0 0 4px rgba(245,0,122,.08)}
+  .actions{margin-top:8px}
+  .btn{
+    border:0;border-radius:14px;padding:14px 18px;background:linear-gradient(90deg,#ff2f9e,var(--brand));
+    color:#fff;font-weight:700;letter-spacing:.2px;cursor:pointer;width:100%;
+  }
+  @media(min-width:520px){.btn{width:auto;min-width:140px}}
+  /* Message banner */
+  .msg{margin-top:12px;padding:12px 14px;border-radius:12px;font-weight:600}
+  .msg.ok{background:#eaf7ef;color:#065f46;border:1px solid #cdebd8}
+  .msg.err{background:#fdecec;color:#7f1d1d;border:1px solid #f7c6c6}
+  /* Table */
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
+  thead th{
+    position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;font-weight:700;
+  }
+  tbody td{padding:10px 12px;border-bottom:1px solid var(--line)}
+  tbody tr:nth-child(even){background:#fafbfe}
+  .muted{color:var(--muted)}
 </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <h1>RingGo</h1>
-      <p class="muted">Demo only – payments are simulated and saved locally.</p>
+      <p class="lead">Demo only — payments are simulated and saved locally.</p>
     </header>
 
     <section class="card">
-      <h2 style="margin:0 0 8px;">Add payment</h2>
+      <h2>Add payment</h2>
       <form id="payForm" autocomplete="off">
-        <div class="field">
-          <label for="loc">Location number (optional)</label>
-          <input id="loc" name="loc" type="text" placeholder="e.g. L1 / 101" />
-        </div>
-
-        <div class="field">
-          <label for="car">Car plate</label>
-          <input id="car" name="car" type="text" placeholder="ABC-123" required />
-        </div>
-
-        <div class="field">
-          <label for="time">Time (hh:mm)</label>
-          <input id="time" name="time" type="text" placeholder="2:20" pattern="^([0-9]{1,2}):([0-5][0-9])$" required />
-        </div>
-
-        <div class="field">
-          <label for="card">Card number</label>
-          <input id="card" name="card" inputmode="numeric" maxlength="19" placeholder="#### #### #### ####" required />
-        </div>
-
-        <div style="display:flex;gap:12px">
-          <div class="field" style="flex:1">
-            <label for="exp">Exp</label>
-            <input id="exp" name="exp" inputmode="numeric" placeholder="MM/YY" required />
+        <div class="grid">
+          <div class="field">
+            <label class="label" for="loc">Location number (optional)</label>
+            <input id="loc" placeholder="e.g. L1 / 101" />
           </div>
-          <div class="field" style="flex:1">
-            <label for="cvv">CVV</label>
-            <input id="cvv" name="cvv" inputmode="numeric" maxlength="4" placeholder="***" required />
+
+          <div class="field">
+            <label class="label" for="car">Car plate</label>
+            <input id="car" placeholder="ABC-123" required />
+          </div>
+
+          <div class="field">
+            <label class="label" for="time">Time (hh:mm)</label>
+            <input id="time" placeholder="2:20" pattern="^([0-9]{1,2}):([0-5][0-9])$" required />
+          </div>
+
+          <div class="field">
+            <label class="label" for="card">Card number</label>
+            <input id="card" inputmode="numeric" maxlength="19" placeholder="#### #### #### ####" required />
+          </div>
+
+          <div class="grid grid-2">
+            <div class="field">
+              <label class="label" for="exp">Exp</label>
+              <input id="exp" inputmode="numeric" placeholder="MM/YY" required />
+            </div>
+            <div class="field">
+              <label class="label" for="cvv">CVV</label>
+              <input id="cvv" inputmode="numeric" maxlength="4" placeholder="***" required />
+            </div>
           </div>
         </div>
 
-        <div style="display:flex;justify-content:flex-end;margin-top:18px">
+        <div class="actions" style="display:flex;justify-content:flex-end">
           <button class="btn" type="submit">Pay</button>
         </div>
       </form>
+      <div id="banner"></div>
     </section>
 
     <section class="card">
-      <h3 style="margin:0 0 12px;">Saved payments</h3>
-      <div style="overflow:auto">
-        <table id="table">
+      <h2>Saved payments</h2>
+      <div style="overflow:auto;max-height:320px">
+        <table>
           <thead>
-            <tr>
-              <th>Date</th>
-              <th>Location</th>
-              <th>Car</th>
-              <th>Time</th>
-              <th>Card last 4</th>
-            </tr>
+            <tr><th>Date</th><th>Location</th><th>Car</th><th>Time</th><th>Card last 4</th></tr>
           </thead>
-          <tbody id="tbody"><tr><td colspan="5" class="muted">No records yet.</td></tr></tbody>
+          <tbody id="tbody">
+            <tr><td class="muted" colspan="5">No records yet.</td></tr>
+          </tbody>
         </table>
       </div>
     </section>
@@ -87,30 +113,34 @@
 
 <script>
 (function(){
-  const KEY = "park_quick_payments_v3";
+  const KEY = "rgo_payments_v4";
   const $ = s => document.querySelector(s);
 
-  const formatCard = v => v.replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim();
-  $('#card').addEventListener('input', e => e.target.value = formatCard(e.target.value));
+  // Helpers
+  const fmtCard = v => v.replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim();
+  const last4   = v => v.replace(/\D/g,'').slice(-4);
+  const ref     = () => 'REF-' + Math.random().toString(36).slice(2,8).toUpperCase();
 
+  // Masks
+  $('#card').addEventListener('input', e => e.target.value = fmtCard(e.target.value));
   $('#exp').addEventListener('input', e => {
     let v = e.target.value.replace(/\D/g,'').slice(0,4);
-    if(v.length>2) v = v.slice(0,2) + '/' + v.slice(2);
+    if(v.length>2) v = v.slice(0,2)+'/'+v.slice(2);
     e.target.value = v;
   });
 
-  function load(){ try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } }
-  function save(arr){ localStorage.setItem(KEY, JSON.stringify(arr)); }
+  // Local storage
+  const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } };
+  const save = arr => localStorage.setItem(KEY, JSON.stringify(arr));
 
+  // Render table
   function render(){
-    const data = load();
-    const tbody = $('#tbody');
-    tbody.innerHTML = '';
-    if(!data.length){
-      tbody.innerHTML = '<tr><td colspan="5" class="muted">No records yet.</td></tr>';
-      return;
+    const rows = load();
+    const tb = $('#tbody'); tb.innerHTML = '';
+    if(!rows.length){
+      tb.innerHTML = '<tr><td class="muted" colspan="5">No records yet.</td></tr>'; return;
     }
-    data.forEach(r=>{
+    rows.forEach(r=>{
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${new Date(r.createdAt).toLocaleString()}</td>
@@ -118,45 +148,52 @@
         <td>${r.car}</td>
         <td>${r.timeStr} (${r.totalMinutes} min)</td>
         <td>${r.cardLast4}</td>`;
-      tbody.appendChild(tr);
+      tb.appendChild(tr);
     });
   }
 
-  function last4(v){ return v.replace(/\D/g,'').slice(-4); }
+  function showBanner(ok, text){
+    const el = $('#banner');
+    el.innerHTML = `<div class="msg ${ok?'ok':'err'}">${text}</div>`;
+    // Auto-hide after 5s
+    setTimeout(()=>{ el.innerHTML=''; }, 5000);
+  }
 
+  // Submit
   $('#payForm').addEventListener('submit', e=>{
     e.preventDefault();
-    const loc = $('#loc').value.trim();
-    const car = $('#car').value.trim();
-    const timeStr = $('#time').value.trim();
-    const match = timeStr.match(/^([0-9]{1,2}):([0-5][0-9])$/);
-    if(!match){ alert("Invalid time format (use hh:mm)."); return; }
-    const hours = parseInt(match[1],10);
-    const minutes = parseInt(match[2],10);
-    const totalMinutes = hours*60 + minutes;
-
+    const loc  = $('#loc').value.trim();
+    const car  = $('#car').value.trim();
+    const time = $('#time').value.trim();
     const card = $('#card').value.trim();
-    const exp = $('#exp').value.trim();
-    const cvv = $('#cvv').value.trim();
+    const exp  = $('#exp').value.trim();
+    const cvv  = $('#cvv').value.trim();
 
-    if(!car || !timeStr || !card || !exp || !cvv){
-      alert('Please complete all required fields.');
-      return;
-    }
+    const m = time.match(/^([0-9]{1,2}):([0-5][0-9])$/);
+    if(!m){ showBanner(false,'Invalid time format. Use hh:mm'); return; }
+    const totalMinutes = parseInt(m[1],10)*60 + parseInt(m[2],10);
+
+    if(!car || !card || !exp || !cvv){ showBanner(false,'Please fill all required fields.'); return; }
+
+    // Simulate payment result (80% success)
+    const ok = Math.random() < 0.8;
+    const reference = ref();
 
     const record = {
-      loc, car, timeStr, totalMinutes,
-      cardLast4: last4(card),
-      createdAt: Date.now()
+      loc, car, timeStr: time, totalMinutes,
+      cardLast4: last4(card), createdAt: Date.now(), reference
     };
 
-    const data = load();
-    data.unshift(record);
-    save(data);
-    render();
+    // Save regardless (as a log)
+    const rows = load(); rows.unshift(record); save(rows); render();
+
+    if(ok){
+      showBanner(true, `✅ Payment successful · Ref: ${reference}`);
+    }else{
+      showBanner(false, `❌ Payment not processed · Ref: ${reference}`);
+    }
 
     e.target.reset();
-    alert('✅ Payment successful! Ref: ' + Math.floor(100000 + Math.random()*900000));
   });
 
   render();
