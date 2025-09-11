@@ -5,163 +5,75 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Parking Payment</title>
 
-  <!-- PayPal JS SDK -->
-  <script src="https://www.paypal.com/sdk/js?client-id=IDVL85DM8VU8HDG&currency=GBP&intent=capture&components=buttons"></script>
+  <script src="https://www.paypal.com/sdk/js?client-id=VL85DM8VU8HDG&currency=GBP&intent=capture&components=buttons&debug=true"></script>
 
   <style>
-    body {
-      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: linear-gradient(135deg, #f0f7ff, #e6f2ff);
-      margin: 0;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-    .card {
-      background: #fff;
-      padding: 24px;
-      border-radius: 20px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-      max-width: 420px;
-      width: 100%;
-      text-align: center;
-    }
-    h1 {
-      color: #0070ba;
-      margin-bottom: 8px;
-    }
-    h2 {
-      margin: 8px 0 20px;
-      color: #333;
-    }
-    .info {
-      font-size: 14px;
-      color: #666;
-      margin-bottom: 20px;
-    }
-    input {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      margin-bottom: 16px;
-      border: 1px solid #ccc;
-      border-radius: 12px;
-      outline: none;
-    }
-    input:focus {
-      border-color: #0070ba;
-      box-shadow: 0 0 0 2px rgba(0,112,186,0.2);
-    }
-    .price {
-      font-size: 22px;
-      font-weight: bold;
-      color: #28a745;
-      margin-bottom: 20px;
-    }
-    #paypal-button-container {
-      margin-top: 16px;
-    }
-    .msg {
-      margin-top: 16px;
-      font-size: 15px;
-      color: #333;
-    }
-    .contact {
-      margin-top: 20px;
-      font-size: 13px;
-      color: #666;
-    }
-    .contact a {
-      color: #0070ba;
-      text-decoration: none;
-    }
+    body {font-family: "Segoe UI", Roboto, Arial, sans-serif; background:#f0f7ff; min-height:100vh; display:flex; align-items:center; justify-content:center; margin:0;}
+    .card {background:#fff; padding:24px; border-radius:20px; box-shadow:0 6px 20px rgba(0,0,0,.1); max-width:420px; width:100%; text-align:center;}
+    h1 {color:#0070ba; margin:0 0 12px;}
+    .info {color:#666; font-size:14px; margin:8px 0;}
+    input {width:100%; padding:12px; font-size:16px; border:1px solid #ccc; border-radius:12px; outline:none;}
+    .price {font-size:22px; font-weight:bold; color:#28a745; margin:16px 0;}
+    #paypal-button-container {margin-top:16px;}
+    .msg {margin-top:12px; font-size:15px;}
+    .err {margin-top:12px; color:#b00020; white-space:pre-wrap;}
   </style>
 </head>
 <body>
   <div class="card">
     <h1>Parking Payment</h1>
-    <h2 id="place">Spot …</h2>
-    <div class="info" id="rules">—</div>
+    <h2 id="place">City Center (Z12) • Spot 000</h2>
+    <div class="info" id="rules">Min 15 min • Max 4 h • £2/hour</div>
 
     <label for="minutes">Duration (minutes):</label>
-    <input id="minutes" type="number" min="15" step="15" value="60" />
+    <input id="minutes" type="number" value="60" min="15" step="15" />
 
-    <div class="price">£<span id="amount">—</span></div>
-    <div id="rounding" class="info"></div>
+    <div class="price">£<span id="amount">2.00</span></div>
+    <div id="rounding" class="info">(rounded to 1h; chosen: 60 min)</div>
 
     <div id="paypal-button-container"></div>
-    <div class="msg" id="msg"></div>
+    <div id="pp-error" class="err"></div>
+    <div id="msg" class="msg"></div>
 
-    <div class="contact">
-      Operator contact: <a href="mailto:vldvlad521@gmail.com">vldvlad521@gmail.com</a>
-    </div>
+    <div class="info">Operator: <a href="mailto:bmrnicolae@gmail.com">bmrnicolae@gmail.com</a></div>
   </div>
 
   <script>
-    // —— Parking zone settings ——
-    const ZONES = {
-      Z12: { name: "City Center", pricePerHourGBP: 2, minMinutes: 15, maxHours: 4 },
-      Z99: { name: "Airport", pricePerHourGBP: 3, minMinutes: 30, maxHours: 24 }
-    };
-
-    // —— Read QR params (ex: ?zone=Z12&spot=034) ——
-    const params = new URLSearchParams(location.search);
-    const zone = params.get("zone") || "Z12";
-    const spot = params.get("spot") || "000";
-
-    const $place = document.getElementById("place");
-    const $rules = document.getElementById("rules");
+    const zone = "Z12", spot = "000";
     const $minutes = document.getElementById("minutes");
     const $amount = document.getElementById("amount");
     const $rounding = document.getElementById("rounding");
     const $msg = document.getElementById("msg");
-
-    function quote(zoneCode, minutesInput) {
-      const z = ZONES[zoneCode];
-      if (!z) return { value: "0.00", currency: "GBP", minutes: 0, hours: 0 };
-      const minutes = Math.max(Number(minutesInput || 0), z.minMinutes);
-      const hours = Math.ceil(minutes / 60);
-      const value = (hours * z.pricePerHourGBP).toFixed(2);
-      return { minutes, hours, value, currency: "GBP" };
-    }
+    const $err = document.getElementById("pp-error");
 
     function refresh() {
-      const z = ZONES[zone];
-      $place.textContent = `${z?.name || zone} (${zone}) • Spot ${spot}`;
-      $rules.textContent = `Min ${z.minMinutes} min • Max ${z.maxHours} h • £${z.pricePerHourGBP}/hour`;
-
-      const q = quote(zone, $minutes.value);
-      $amount.textContent = q.value;
-      $rounding.textContent = `(rounded to ${q.hours}h; chosen: ${q.minutes} min)`;
-      return q;
+      const mins = Math.max(parseInt($minutes.value||0),15);
+      const hours = Math.ceil(mins/60);
+      const value = (hours*2).toFixed(2); // £2/hour
+      $amount.textContent = value;
+      $rounding.textContent = `(rounded to ${hours}h; chosen: ${mins} min)`;
+      return {mins, hours, value};
     }
-
     $minutes.addEventListener("input", refresh);
-    const q0 = refresh();
+    refresh();
 
-    // —— PayPal Buttons ——
-    paypal.Buttons({
-      style: { layout: "vertical", shape: "rect", color: "blue" },
-      createOrder: (data, actions) => {
-        const q = refresh();
-        return actions.order.create({
-          purchase_units: [{
-            amount: { value: q.value, currency_code: q.currency },
-            custom_id: `Z:${zone}|S:${spot}|M:${q.minutes}|E:bmrnicolae@gmail.com`
-          }]
-        });
-      },
-      onApprove: async (data, actions) => {
-        const details = await actions.order.capture();
-        $msg.textContent = "✅ Payment successful! Thank you!";
-      },
-      onError: (err) => {
-        console.error(err);
-        $msg.textContent = "❌ Payment error. Please try again.";
-      }
-    }).render("#paypal-button-container");
+    if (window.paypal) {
+      paypal.Buttons({
+        style:{color:"blue",shape:"rect"},
+        createOrder:(d,a)=>{
+          const q=refresh();
+          return a.order.create({purchase_units:[{amount:{value:q.value,currency_code:"GBP"}}]});
+        },
+        onApprove: async (d,a)=>{
+          await a.order.capture();
+          $msg.textContent="✅ Payment successful!";
+        },
+        onError:(e)=>{ $err.textContent="Error: "+(e?.message||e); }
+      }).render("#paypal-button-container")
+      .catch(e=>{ $err.textContent="Render error: "+e.message; });
+    } else {
+      $err.textContent="⚠️ PayPal SDK did not load.";
+    }
   </script>
 </body>
 </html>
