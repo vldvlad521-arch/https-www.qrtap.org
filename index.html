@@ -1,162 +1,118 @@
-
 <!doctype html>
 <html lang="ro">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QRtap – Plată parcare / RingGo</title>
-  <meta name="description" content="Plătește rapid parcarea și continuă la RingGo." />
+  <title>QRtap → RingGo</title>
+  <meta name="description" content="Introdu datele și continuă către RingGo. Nu stocăm nimic." />
   <style>
     :root{
-      --bg:#0b1020;--card:#121726;--muted:#99a4b2;--line:#1f2637;
-      --accent:#1e9c63;--accent2:#15a374;--text:#eef2f7;
+      --bg:#0b1020; --card:#121726; --muted:#1b2338;
+      --text:#eef2f7; --line:#1f2637; --accent:#21c48d;
     }
     *{box-sizing:border-box}
-    html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
-    .wrap{max-width:860px;margin:0 auto;padding:20px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px 20px;box-shadow:0 10px 28px rgba(0,0,0,.25)}
-    h1{margin:0 0 8px;font-size:28px}
-    .muted{color:var(--muted);margin:0 0 16px}
-    label{display:block;margin:14px 0 6px;font-weight:600}
-    input,select{width:100%;background:#0f1424;border:1px solid var(--line);color:var(--text);
-      padding:14px;border-radius:12px;font-size:16px;outline:none}
-    .row{display:grid;gap:12px;grid-template-columns:1fr}
-    @media(min-width:700px){ .row{grid-template-columns:1fr 1fr} }
-    .btn{display:inline-block;width:100%;text-align:center;border:0;border-radius:14px;
-      padding:14px 18px;font-weight:800;cursor:pointer;background:var(--accent);color:#fff}
-    .btn:hover{background:var(--accent2)}
-    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-    .badge{font-size:13px;color:#7da0ff;background:#0e1e5e;border:1px solid #274e9a;
-      padding:6px 10px;border-radius:999px}
-    .hint{font-size:12px;color:#8aa0b8;margin-top:6px}
-    .toast{position:fixed;left:20px;right:20px;bottom:20px;background:#0e1a2e;border:1px solid #20324d;
-      color:#9cc3ff;border-radius:14px;padding:12px 14px;display:none}
-    .price{font-weight:700}
+    body{margin:0; font-family:system-ui,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--text);}
+    .wrap{max-width:680px; margin:0 auto; padding:20px;}
+    .card{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:22px; box-shadow:0 10px 28px rgba(0,0,0,.35)}
+    h1{margin:0 0 8px; font-size:26px}
+    p.hint{margin:6px 0 18px; color:#a9b2c7; font-size:15px}
+    label{display:block; margin:14px 6px 6px; font-weight:600}
+    input, select{
+      width:100%; background:#0f1424; border:1px solid var(--line);
+      color:var(--text); padding:14px; border-radius:12px; outline:none;
+    }
+    .row{display:grid; gap:12px; grid-template-columns:1fr 1fr}
+    .btn{
+      display:inline-block; width:100%; text-align:center; border-radius:14px;
+      padding:14px 18px; font-weight:800; cursor:pointer; border:0;
+      background:var(--accent); color:#062217;
+    }
+    .btn:disabled{opacity:.6; cursor:not-allowed}
+    .sub{margin-top:8px; text-align:center; color:#9aa6bf; font-size:13px}
+    .toast{
+      display:none; margin-top:12px; padding:12px 14px; border-radius:10px;
+      background:#0e2b20; color:#c9ffea; border:1px solid #135a45; font-size:14px;
+    }
+    .badge{display:inline-block; padding:4px 10px; border-radius:999px; background:#11223a; border:1px solid #1f3357; color:#a9c8ff; font-size:12px}
+    a.logo{display:inline-block; text-decoration:none; color:#9bc; font-weight:700}
+    .actions{display:grid; gap:10px; margin-top:16px}
+    @media (max-width:700px){ .row{grid-template-columns:1fr} }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="topbar">
-      <h1 style="margin:0">QRtap – Plata parcare</h1>
-      <span class="badge">qrtap.org</span>
-    </div>
-
     <div class="card">
-      <p class="muted">Completează datele, alege durata apoi apasă <b>Plătește</b>. Dacă nu există link de plată pentru durata aleasă, te trimitem direct la RingGo.</p>
+      <div style="display:flex;align-items:center;gap:10px;justify-content:space-between">
+        <h1 style="margin:0">RingGo</h1>
+        <span class="badge">qrtap.org</span>
+      </div>
+      <p class="hint">Completează, apoi apasă <b>Copy & Continue</b>. Deschidem RingGo; datele tale rămân doar la tine.</p>
 
       <form id="f">
-        <div class="row">
-          <div>
-            <label for="plate">Număr înmatriculare</label>
-            <input id="plate" name="plate" placeholder="e.g. AB12 CDE" required />
-          </div>
-          <div>
-            <label for="loc">Locație / cod RingGo</label>
-            <input id="loc" name="loc" placeholder="e.g. 647987" required />
-          </div>
+        <label for="loc">Parking location (cod sau nume)</label>
+        <input id="loc" name="loc" placeholder="ex. 647987" inputmode="numeric" required>
+
+        <label for="plate">Car plate number</label>
+        <input id="plate" name="plate" placeholder="ex. AB12 CDE" required>
+
+        <label for="dur">Duration</label>
+        <select id="dur" name="dur" required>
+          <option value="" selected hidden>— choose duration —</option>
+          <option>30 min</option>
+          <option>1 h</option>
+          <option>2 h</option>
+          <option>3 h</option>
+          <option>4 h</option>
+          <option>All day</option>
+        </select>
+
+        <div class="actions">
+          <button class="btn" id="goBtn" type="submit">Copy & Continue to RingGo</button>
         </div>
 
-        <div class="row" style="margin-top:12px">
-          <div>
-            <label for="dur">Durată</label>
-            <select id="dur" name="dur" required>
-              <option value="" selected>— Alege durata —</option>
-              <option value="0.5">30 min</option>
-              <option value="1">1 oră</option>
-              <option value="2">2 ore</option>
-              <option value="3">3 ore</option>
-              <option value="4">4 ore</option>
-              <option value="6">6 ore</option>
-              <option value="12">12 ore</option>
-              <option value="24">1 zi (24h)</option>
-              <option value="36">36h</option>
-              <option value="48">2 zile (48h)</option>
-            </select>
-            <div class="hint">Prețul se va calcula la plată, conform linkului SumUp configurat.</div>
-          </div>
-        </div>
-
-        <div style="margin-top:18px">
-          <button type="submit" class="btn">Plătește</button>
-        </div>
+        <div class="toast" id="toast">Copied: <span id="copied"></span></div>
+        <p class="sub">Plata și introducerea finală a datelor se fac pe site-ul/app-ul RingGo.</p>
       </form>
-      <div id="toRingGo" class="hint" style="margin-top:10px;display:none">
-        N-avem link de plată pentru durata asta. Te ducem direct pe RingGo…
-      </div>
     </div>
   </div>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
   <script>
-    // =======================
-    // CONFIG
-    // =======================
+    const f = document.getElementById('f');
+    const toast = document.getElementById('toast');
+    const copied = document.getElementById('copied');
+    const RINGGO_URL = "https://myringgo.co.uk/"; // destinația oficială
 
-    // 1) MAPĂ DURATE -> LINK SumUp (B2C). Pune link-urile tale REALE aici.
-    //    Cheile sunt orele ca string ("0.5","1","2","3","4","6","12","24","36","48").
-    //    Dacă o durată nu are link, facem fallback la RingGo.
-    const SUMUP_LINKS = {
-      // TODO: pune link-urile tale SumUp:
-      "0.5": "", // ex: "https://pay.sumup.com/b2c/XXXXX"  (30 min)
-      "1":   "https://pay.sumup.com/b2c/X0J9V5NWJT",        // 1h
-      "2":   "https://pay.sumup.com/b2c/XI4QH7R2DN",        // 2h
-      "3":   "",                                            // 3h (dacă ai)
-      "4":   "https://pay.sumup.com/b2c/XRL02T0TTY",        // 4h
-      "6":   "",                                            // 6h
-      "12":  "",                                            // 12h
-      "24":  "https://pay.sumup.com/b2c/XD341ZO8NJ",        // 24h (zi)
-      "36":  "",                                            // 36h
-      "48":  ""                                             // 48h (2 zile)
-    };
-
-    // 2) Link RingGo (fallback). Poți schimba în adresa/parcarea ta dedicată:
-    const RINGGO_URL = "https://www.myringgo.co.uk/";
-
-    // 3) (opțional) atașăm datele ca query string când plecăm spre plată / RingGo – util pentru tracking
-    function buildQuery(plate, loc, h) {
-      const qs = new URLSearchParams({ plate, loc, h: String(h) }).toString();
-      return qs ? ("?" + qs) : "";
-    }
-
-    // =======================
-    // LOGICĂ FORMULAR
-    // =======================
-    const form = document.getElementById("f");
-    const toast = document.getElementById("toast");
-    const toRingGoHint = document.getElementById("toRingGo");
-
-    function notify(msg) {
-      toast.textContent = msg;
-      toast.style.display = "block";
-      setTimeout(() => toast.style.display = "none", 1500);
-    }
-
-    form.addEventListener("submit", (e) => {
+    f.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const plate = document.getElementById("plate").value.trim();
-      const loc   = document.getElementById("loc").value.trim();
-      const hours = document.getElementById("dur").value;
+      const plate = document.getElementById('plate').value.trim();
+      const loc   = document.getElementById('loc').value.trim();
+      const dur   = document.getElementById('dur').value.trim();
 
-      if (!plate || !loc || !hours) {
-        notify("Completează toate câmpurile.");
+      if(!plate || !loc || !dur){
+        alert('Te rog completează toate câmpurile.');
         return;
       }
 
-      const sumupUrl = (SUMUP_LINKS[hours] || "").trim();
-      const qs = buildQuery(plate, loc, hours);
-
-      if (sumupUrl) {
-        // Avem link SumUp pentru durata asta – mergem la plată
-        window.location.href = sumupUrl + qs;
-      } else {
-        // N-avem link → fallback RingGo
-        toRingGoHint.style.display = "block";
-        setTimeout(() => {
-          window.location.href = RINGGO_URL + qs;
-        }, 600);
+      // Text util pentru lipit rapid în RingGo
+      const clip = `Plate: ${plate} • Location: ${loc} • Duration: ${dur}`;
+      try {
+        await navigator.clipboard.writeText(clip);
+        copied.textContent = clip;
+        toast.style.display = 'block';
+        setTimeout(()=> toast.style.display='none', 1500);
+      } catch(err){
+        // Dacă clipboard nu e permis, nu blocăm fluxul
       }
+
+      // Opțional: trecem datele în query (RingGo le va ignora, dar ție îți pot ajuta la analytics)
+      const qs = new URLSearchParams({ plate, loc, dur }).toString();
+      const url = RINGGO_URL + (RINGGO_URL.includes('?') ? '&' : '?') + qs;
+
+      // Redirect
+      window.location.href = RINGGO_URL; // folosește URL-ul curat
+      // Dacă preferi să păstrezi query-ul pentru tracking, înlocuiește linia de mai sus cu:
+      // window.location.href = url;
     });
   </script>
 </body>
