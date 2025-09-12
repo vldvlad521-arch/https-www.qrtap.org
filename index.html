@@ -2,31 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Parking Payment</title>
 
-  <!-- 🔑 Înlocuiește X-urile cu Client ID-ul tău LIVE -->
+  <!-- PayPal SDK cu Client ID-ul tău Live -->
   <script src="https://www.paypal.com/sdk/js?client-id=AS9hdwsEsJqfIs0XUhQSQX1-itkthJ2NeNRp-3xIDfAs_oh6wi7PUeMbftDoIBc8WpHzXHUScQIgzLQvm&currency=GBP&intent=capture&components=buttons"></script>
 
   <style>
-    :root { --brand:#0070ba; --ok:#28a745; --bg1:#f0f7ff; --bg2:#e6f2ff; --text:#333; --muted:#666; }
-    *{box-sizing:border-box}
-    body{
-      font-family:"Segoe UI",Roboto,Arial,sans-serif;
-      background:linear-gradient(135deg,var(--bg1),var(--bg2));
-      margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;
-    }
-    .card{background:#fff; width:100%; max-width:420px; padding:24px; border-radius:20px; box-shadow:0 6px 20px rgba(0,0,0,.1); text-align:center;}
-    h1{color:var(--brand); margin:0 0 12px}
-    .info{color:var(--muted); font-size:14px; margin:8px 0}
-    label{display:block; text-align:left; margin:6px 0}
-    input{width:100%; padding:12px; font-size:16px; border:1px solid #ccc; border-radius:12px; outline:none; color:var(--brand); font-weight:700;}
-    input:focus{border-color:var(--brand); box-shadow:0 0 0 2px rgba(0,112,186,.2)}
-    .price{font-size:22px; font-weight:700; color:var(--ok); margin:16px 0}
-    .num{color:var(--brand); font-weight:700} /* cifre albastre */
-    #paypal-button-container{margin-top:12px}
-    .msg{margin-top:10px}
-    .err{margin-top:10px; color:#b00020; white-space:pre-wrap}
+    body {font-family: "Segoe UI", Arial, sans-serif; background:#f0f7ff; min-height:100vh; display:flex; align-items:center; justify-content:center; margin:0;}
+    .card {background:#fff; padding:24px; border-radius:20px; box-shadow:0 6px 20px rgba(0,0,0,.1); max-width:420px; width:100%; text-align:center;}
+    h1 {color:#0070ba; margin-bottom:12px;}
+    .info {color:#666; font-size:14px; margin:8px 0;}
+    input {width:100%; padding:12px; font-size:16px; border:1px solid #ccc; border-radius:12px; outline:none; color:#0070ba; font-weight:700;}
+    .price {font-size:22px; font-weight:bold; color:#28a745; margin:16px 0;}
+    .num {color:#0070ba; font-weight:700;}
+    #paypal-button-container {margin-top:16px;}
+    .msg {margin-top:12px; font-size:15px;}
+    .err {margin-top:12px; color:#b00020; white-space:pre-wrap;}
   </style>
 </head>
 <body>
@@ -49,14 +41,7 @@
   </div>
 
   <script>
-    // ---- Config zonă (poți schimba) ----
-    const ZONES = { Z12:{ name:"City Center", pricePerHourGBP:2, minMinutes:15, maxHours:4 } };
-
-    // ---- Query params (?zone=Z12&spot=034) ----
-    const p = new URLSearchParams(location.search);
-    const zone = p.get("zone") || "Z12";
-    const spot = p.get("spot") || "000";
-
+    const zone = "Z12", spot = "000";
     const $minutes = document.getElementById("minutes");
     const $amount  = document.getElementById("amount");
     const $round   = document.getElementById("rounding");
@@ -65,44 +50,39 @@
     const $err     = document.getElementById("pp-error");
     const $msg     = document.getElementById("msg");
 
-    // Învelim toate cifrele dintr-un text
     function colorNums(text){ return String(text).replace(/\d+/g, m => `<span class="num">${m}</span>`); }
     function setHTML(el, html){ el.innerHTML = html; }
 
     function refresh(){
-      const z = ZONES[zone] || ZONES.Z12;
-      const mins  = Math.max(parseInt($minutes.value||0), z.minMinutes);
+      const mins  = Math.max(parseInt($minutes.value||0),15);
       const hours = Math.ceil(mins/60);
-      const value = (hours * z.pricePerHourGBP).toFixed(2);
+      const value = (hours*2).toFixed(2); // £2/hour
 
-      setHTML($place, `${z.name} (${zone}) • Spot ${colorNums(spot)}`);
-      setHTML($rules, `Min ${colorNums(z.minMinutes)} min • Max ${colorNums(z.maxHours)} h • £${colorNums(z.pricePerHourGBP)}/hour`);
-      $amount.textContent = value; // suma e verde
+      setHTML($place, `City Center (Z12) • Spot ${colorNums(spot)}`);
+      setHTML($rules, `Min ${colorNums(15)} min • Max ${colorNums(4)} h • £${colorNums(2)}/hour`);
+      $amount.textContent = value;
       setHTML($round, `(rounded to ${colorNums(hours)}h; chosen: ${colorNums(mins)} min)`);
       return { value, mins, hours };
     }
     $minutes.addEventListener("input", refresh);
     refresh();
 
-    // ---- PayPal ----
     if (window.paypal){
       paypal.Buttons({
-        style:{layout:"vertical",color:"blue"},
+        style:{color:"blue",shape:"rect"},
         createOrder:(d,a)=>{
-          const q = refresh();
-          return a.order.create({
-            purchase_units:[{ amount:{ value:q.value, currency_code:"GBP" },
-              custom_id:`Z:${zone}|S:${spot}|M:${q.mins}` }]
-          });
+          const q=refresh();
+          return a.order.create({purchase_units:[{amount:{value:q.value,currency_code:"GBP"}}]});
         },
         onApprove: async (d,a)=>{
-          try { const details = await a.order.capture(); $msg.textContent = "✅ Payment successful!"; }
-          catch(e){ $err.textContent = "Confirm error: " + (e?.message||e); }
+          await a.order.capture();
+          $msg.textContent="✅ Payment successful!";
         },
-        onError:(e)=>{ $err.textContent = "Error: " + (e?.message||e); }
-      }).render("#paypal-button-container").catch(e=>{ $err.textContent = "Render error: " + e.message; });
+        onError:(e)=>{ $err.textContent="Error: "+(e?.message||e); }
+      }).render("#paypal-button-container")
+      .catch(e=>{ $err.textContent="Render error: "+e.message; });
     } else {
-      $err.textContent = "⚠️ PayPal SDK did not load.";
+      $err.textContent="⚠️ PayPal SDK did not load.";
     }
   </script>
 </body>
