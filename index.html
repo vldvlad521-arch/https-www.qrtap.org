@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Parking Payment</title>
 
-  <script src="https://www.paypal.com/sdk/js?client-id=AS9hdwsEsJqfIs0XUhQSQX1-itkthJ2NeNRp-3xIDfAs_oh6wi7PUeMbftDoIBc8WpHzXHUScQIgzLQvm&currency=GBP&intent=capture&components=buttons&debug=true"></script>
+  <!-- 🔑 Lipeste aici Client ID-ul tau LIVE in loc de XXXXXXXXXX -->
+  <script src="https://www.paypal.com/sdk/js?client-id=AS9hdwsEsJqfIs0XUhQSQX1-itkthJ2NeNRp-3xIDfAs_oh6wi7PUeMbftDoIBc8WpHzXHUScQIgzLQvm&currency=GBP&intent=capture&components=buttons"></script>
 
   <style>
-    body {font-family: "Segoe UI", Roboto, Arial, sans-serif; background:#f0f7ff; min-height:100vh; display:flex; align-items:center; justify-content:center; margin:0;}
+    body {font-family: "Segoe UI", Arial, sans-serif; background:#f0f7ff; min-height:100vh; display:flex; align-items:center; justify-content:center; margin:0;}
     .card {background:#fff; padding:24px; border-radius:20px; box-shadow:0 6px 20px rgba(0,0,0,.1); max-width:420px; width:100%; text-align:center;}
-    h1 {color:#0070ba; margin:0 0 12px;}
+    h1 {color:#0070ba; margin-bottom:12px;}
     .info {color:#666; font-size:14px; margin:8px 0;}
     input {width:100%; padding:12px; font-size:16px; border:1px solid #ccc; border-radius:12px; outline:none;}
     .price {font-size:22px; font-weight:bold; color:#28a745; margin:16px 0;}
@@ -35,7 +36,7 @@
     <div id="pp-error" class="err"></div>
     <div id="msg" class="msg"></div>
 
-    <div class="info">Operator: <a href="mailto:vldvlad521@gmail.com">vldvlad521@gmail.com</a></div>
+    <div class="info">Operator: <a href="mailto:bmrnicolae@gmail.com">bmrnicolae@gmail.com</a></div>
   </div>
 
   <script>
